@@ -1,5 +1,7 @@
 <script>
 import AuthenticationAPI from '../api/LoginAPI/authenticationAPI';
+import { useUserStore } from '@/store/userStore'
+import { mapState, mapActions } from 'pinia'
 export default {
     data() {
         return {
@@ -8,11 +10,33 @@ export default {
         }
     },
     methods: {
+        // gives access to this.commitUserInfo and this.toggleLogged
+        ...mapActions(useUserStore, ["commitUserInfo"]),
         login() {
-            this.count++
+            AuthenticationAPI.login(this.userName, this.password)
+                .then(async res => {
+                    localStorage.setItem('accessToken', res.data.accessToken);
+                    localStorage.setItem('refreshToken', res.data.refreshToken);
+                    await AuthenticationAPI.getUser()
+                        .then(res => {
+                            this.commitUserInfo(res.data)
+                        })
+                        .catch(err => {
+                            this.commitUserInfo(null)
+                        })
+                    // call commit to push userinfo to store
+
+                    this.$router.push('/')
+                })
+                .catch(err => {
+                    console.log(err)
+                })
         }
     },
     computed: {
+        ...mapState(useUserStore, {
+            userInfo: "userInfo",
+        }),
         classObject() {
             return {
                 active: this.isActive && !this.error,
@@ -34,14 +58,16 @@ export default {
             <form class='content-login'>
                 <div class='form-group'>
                     <label>Tên tài khoản hoặc email</label>
-                    <input type='text' class='input-login' placeholder='Tài khoản/Email' id='userName' />
+                    <input type='text' class='input-login' placeholder='Tài khoản/Email' id='userName'
+                        v-model="userName" />
                 </div>
                 <div class='form-group'>
                     <label>Mật khẩu</label>
-                    <input type='password' class='input-login' placeholder='Nhập mật khẩu' id='password' />
+                    <input type='password' class='input-login' placeholder='Nhập mật khẩu' id='password'
+                        v-model="password" />
                 </div>
-                <input type='submit' class='btn-login' value='Đăng nhập' />
-                <div onClick={openPopupTooltip} class="none-underline bot">
+                <input type='button' class='btn-login' value='Đăng nhập' @click="login" />
+                <div class="none-underline bot">
                     <div>Đăng ký tài khoản?</div>
                     <a href='/account/forgot-password' class='none-underline'>
                         Quên mật khẩu?</a>
