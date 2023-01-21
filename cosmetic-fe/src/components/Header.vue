@@ -2,14 +2,18 @@
 import { useUserStore } from '@/store/userStore'
 import { mapState, mapActions } from 'pinia'
 import AuthenticationAPI from '../api/LoginAPI/authenticationAPI';
+import ProductAPI from '../api/ProductAPI/ProductAPI'
 export default {
     data() {
         return {
             isShowBotHeader: false,
-            isShowTopHeader: false
+            isShowTopHeader: false,
+            categories: [],
+            isShowDropdownMenu: false
         }
     },
     methods: {
+        // khai bao action su dung => su dung nhu this
         ...mapActions(useUserStore, ["commitUserInfo"]),
         handleScrollHeader() {
             if (window.scrollY >= 130 && window.innerWidth > 886) {
@@ -27,6 +31,7 @@ export default {
         }
     },
     computed: {
+        // khai bao state su dung
         ...mapState(useUserStore, {
             userInfo: "userInfo"
         }),
@@ -35,6 +40,9 @@ export default {
         },
         isLogged() {
             return this.userInfo !== null ? true : false
+        },
+        currentRouteName() {
+            return this.$router.currentRoute.value.path
         }
     },
     mounted() {
@@ -48,11 +56,16 @@ export default {
                 .catch(err => {
                     this.commitUserInfo(null)
                 })
+            await ProductAPI.getAllCategory()
+                .then(res => {
+                    this.categories = res.data
+                })
         }
         fetchData()
         window.addEventListener('scroll', this.handleScrollHeader)
     }
 }
+
 </script>
 <template>
     <div class="header">
@@ -69,10 +82,10 @@ export default {
                     </div>
                 </div>
                 <div v-else class="top-header-account">
-                    <a href='/login' class="none-underline">
+                    <a href='/login' class="none-underline login">
                         Đăng nhập
                     </a> |
-                    <a class="none-underline">
+                    <a class="none-underline login">
                         Đăng ký
                     </a>
                 </div>
@@ -82,13 +95,67 @@ export default {
         <div class='bot-header' :class="{ active: isShowBotHeader }">
             <div class="bot-header-content">
                 <div class="icon">
-
+                    Leo
                 </div>
+                <ul class="center-menu">
+                    <div class='dropdown-menu' v-show="isShowDropdownMenu">
+                        <div class='dropdown-item' v-for="category in categories"
+                            @mouseleave="isShowDropdownMenu = false" @mouseenter="isShowDropdownMenu = true">
+                            <div class="category-title">
+                                {{ category.CATEGORY_NAME }}
+                            </div>
+                            <div class="list-item">
+                                <div class='item' v-for="categoryDetail in category.category_details">
+                                    <a class='none-underline'>
+                                        {{ categoryDetail.CATEGORY_DETAIL_NAME }}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <li>
+                        <span class="menu-title">
+                            <a class='none-underline'>
+                                <span :class="currentRouteName === '/' ? 'current-path' : ''">
+                                    <i class="bi bi-house-door-fill"></i>
+                                    <span>Trang chủ</span>
+                                </span>
+                            </a>
+                        </span>
+                    </li>
+                    <li>
+                        <span class="menu-title">
+                            <a class='none-underline'>
+                                Tất cả sản phẩm
+                            </a>
+                        </span>
+                    </li>
+                    <li>
+                        <span class="menu-title" @mouseenter="isShowDropdownMenu = true">
+                            <a class='none-underline'>
+                                Thể loại
+                                <i class="bi bi-caret-down-fill"></i>
+                            </a>
+                        </span>
+                    </li>
+                    <li>
+                        <span class="menu-title">
+                            <a class='none-underline'>
+                                Liên hệ
+                            </a>
+                        </span>
+                    </li>
+                </ul>
                 <div class="search-input">
                     <input type='search' placeholder="Tìm sản phẩm" />
                     <button>
                         <BsSearch class="search-icon" />
                     </button>
+                </div>
+                <div>
+                    <a class="cart-icon">
+                        <i class="bi bi-cart"></i>
+                    </a>
                 </div>
             </div>
         </div>
@@ -99,7 +166,9 @@ export default {
 .bot-header {
     border-bottom: 1px solid rgb(219, 208, 208);
 }
-
+.top-header .login {
+    color: white;
+}
 .bot-header {
     box-shadow: 0px 10px 35px -27px rgb(111, 108, 108);
 }
@@ -208,11 +277,12 @@ export default {
 }
 
 .bot-header-content .cart-icon {
-    font-size: 35px;
+    font-size: 32px;
     display: flex;
     justify-content: center;
     color: black;
     position: relative;
+    font-weight: 650;
 }
 
 .bot-header-content .cart-icon:hover {
@@ -237,6 +307,7 @@ export default {
     gap: 15px;
     padding: 25px 50px;
     font-size: 18px;
+    background-color: white;
 }
 
 .bot-header-content .center-menu {
@@ -244,11 +315,11 @@ export default {
     align-self: center;
     justify-content: center;
     gap: 25px;
-    font-weight: 700;
+    font-weight: 650;
     flex-grow: 2;
     list-style: none;
     margin: 0px;
-    text-transform: uppercase;
+    font-size: 18px;
 }
 
 .bot-header-content .center-menu a {
@@ -309,37 +380,28 @@ export default {
     left: 0;
 }
 
-.center-menu li {
-    display: block;
-    position: relative;
-}
 
 /* absolute dua vao position cha, neu ko co => html */
 .center-menu .dropdown-menu {
-    display: none;
-    width: 250px;
+    display: flex;
+    width: 100%;
     position: absolute;
-    margin-top: 26px;
+    justify-content: center;
+    margin-top: 58px;
+    margin-left: 43px;
     z-index: 9;
     background-color: white;
-    box-shadow: 0 0 35px 0 rgb(224, 220, 220);
-    border-radius: 5px;
     animation-name: toggle-dropdownmenu;
     animation-duration: 0.2s;
-}
-
-.center-menu .dropdown-menu :hover {
-    display: flex;
+    padding-top: 20px;
 }
 
 @keyframes toggle-dropdownmenu {
     from {
-        /* height: 0px; */
-        transform: translate(0px, 0px);
+        transform: translate(0px, 5px);
     }
 
     to {
-        /* height: 200px; */
         transform: translate(0px, 0px);
     }
 }
@@ -348,10 +410,10 @@ export default {
     display: flex;
 }
 
-.center-menu .menu-title:hover {
+/* .center-menu .menu-title:hover {
     cursor: pointer;
     border-bottom: solid 2px black;
-}
+} */
 
 .dropdown-menu .dropdown-item {
     list-style: none;
@@ -360,13 +422,27 @@ export default {
     padding: 0;
 }
 
+.current-path {
+    color: #909b6b;
+}
+
 .dropdown-menu .dropdown-item .item {
     text-transform: capitalize;
     width: 230px;
     font-weight: 400;
     font-size: 16px;
-    padding: 20px 10px;
-    border-bottom: 1px solid rgb(227, 223, 223);
+    padding: 15px 0px;
+}
+
+.center-menu .menu-title:hover,
+.dropdown-menu .dropdown-item .item:hover,
+.dropdown-menu .dropdown-item .category-title:hover {
+    color: #909b6b;
+}
+
+.dropdown-menu .dropdown-item .category-title {
+    margin-bottom: 10px;
+    cursor: pointer;
 }
 
 @media screen and (max-width:886px) {
