@@ -1,13 +1,23 @@
 <script>
 import VNDCurrencyFormatter from '../util/VNDCurrencyFormatter'
+import 'vue3-carousel/dist/carousel.css'
+import { Carousel, Slide, Pagination, Navigation } from 'vue3-carousel'
 export default {
     props: {
-        cosmetic: Object
+        cosmetic: Object,
+        images: Array
+    },
+    components: {
+        Carousel,
+        Slide,
+        Pagination,
+        Navigation,
     },
     data() {
         return {
             isShowQuickViewBtn: false,
-            isShowQuickView: false
+            isShowQuickView: false,
+            isModalShow: false
         }
     },
     methods: {
@@ -22,6 +32,18 @@ export default {
         showQuickView(e) {
             this.isShowQuickView = true
             document.addEventListener('click', this.handleClickOutside, true)
+        },
+        handleClickModal(e) {
+            const id = e.target.id
+            if (!id.includes('target-img')) {
+                this.isModalShow = false
+            }
+            document.removeEventListener('click', this.handleClickOutside)
+        },
+        showModal(e) {
+            document.getElementById("target-img").src = e.target.src
+            this.isModalShow = true
+            document.addEventListener('click', this.handleClickModal, true)
         }
     },
     computed: {
@@ -30,16 +52,26 @@ export default {
         },
         getId() {
             return 'quick-view ' + this.cosmetic.COSMETIC_ID
+        },
+        getImages() {
+            const images = this.images.map(image => image.IMAGE_URL)
+            return images
         }
     },
     mounted() {
-        console.log(this.cosmetic)
+        console.log(this.getImages)
     }
 }
 </script>
 <template>
     <div class="card-product" @mouseenter="isShowQuickViewBtn = true" @mouseleave="isShowQuickViewBtn = false">
         <div class="quick-view-content" v-if="isShowQuickView">
+            <div class="diaglog-image" v-show="isModalShow">
+                <div class="close-btn">
+                    X
+                </div>
+                <img src="" id="target-img" />
+            </div>
             <div class="white-space" :id="getId">
 
             </div>
@@ -52,12 +84,15 @@ export default {
                         {{ cosmetic.COSMETIC_NAME }}
                     </div>
                     <div className="img-slide">
-                        <div>
-                            <img :src="cosmetic.IMAGE.IMAGE_URL" class="img" />
-                            <div>
+                        <carousel :items-to-show="1">
+                            <slide v-for="imgUrl in getImages" :key="imgUrl">
+                                <img :src="imgUrl" class="img" @click="showModal" />
+                            </slide>
 
-                            </div>
-                        </div>
+                            <template #addons>
+                                <navigation />
+                            </template>
+                        </carousel>
                     </div>
                     <div class="price">
                         {{ formatToVND }}
@@ -135,6 +170,38 @@ export default {
     justify-content: space-between;
     align-items: center;
     height: 93%;
+}
+
+.card-product .quick-view-content .content .img-slide {
+    width: 400px;
+}
+
+.card-product .quick-view-content .diaglog-image {
+    display: flex;
+    position: fixed;
+    z-index: 99999;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.card-product .quick-view-content .diaglog-image .close-btn {
+    align-self: flex-end;
+    font-weight: 600;
+    font-size: 30px;
+    cursor: pointer;
+    margin-right: 510px;
+    color: white;
+}
+
+.card-product .quick-view-content .diaglog-image img {
+    width: 500px;
+    height: 500px;
 }
 
 .card-product .quick-view-content .content .name {
@@ -236,7 +303,9 @@ export default {
     border-radius: 5px;
     border-bottom-right-radius: 0px;
     border-bottom-left-radius: 0px;
+    cursor: pointer;
 }
+
 .card-product .category {
     text-align: center;
     font-size: 10px;
@@ -290,6 +359,7 @@ export default {
     background-color: rgb(34, 30, 30);
     color: white;
 }
+
 .card-product .box-text {
     padding: 10px 10px;
     display: flex;

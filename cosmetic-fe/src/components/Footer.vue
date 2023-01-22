@@ -29,15 +29,15 @@ export default {
             <span class="title-footer">Liên hệ</span>
             <div class="content-footer">
                 <div class="content-footer-item address">
-                    <div class="footer-icon-address"><HiOutlineLocationMarker /></div>
+                    <div class="footer-icon-address"></div>
                     <div></div>
                 </div>
                 <div class="content-footer-item">
-                    <div><HiPhone /></div>
+                    <div></div>
                     <div>0961234578</div>
                 </div>
                 <div class="content-footer-item">
-                    <div><HiOutlineMail /></div>
+                    <div></div>
                     <div>abc@gmail.com</div>
                 </div>
             </div>
@@ -45,17 +45,17 @@ export default {
         <div class="card-footer">
             <span class="title-footer">Về ABC</span>
             <div class="content-footer-item">
-                <div><FiHelpCircle /></div>
+                <div></div>
                 <div>Trợ giúp</div>
             </div>
         </div>
         <div class="card-footer">
             <span class="title-footer">Mạng xã hội</span>
             <div class="content-footer-item">
-                <div class="icon-social"><BsFacebook /></div>
-                <div class="icon-social"><BsInstagram/></div>
-                <div class="icon-social"><BsTwitter/></div>
-                <div class="icon-social"><BsPinterest/></div>
+                <div class="icon-social"></div>
+                <div class="icon-social"></div>
+                <div class="icon-social"></div>
+                <div class="icon-social"></div>
             </div>
         </div>
     </div>

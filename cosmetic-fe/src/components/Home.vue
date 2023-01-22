@@ -34,6 +34,7 @@ export default {
                     <Card v-for="cartitem in poplularProducts" 
                         :key="cartitem.COSMETIC.COSMETIC_ID"
                         :cosmetic= "cartitem.COSMETIC"
+                        :images ="cartitem.images"
                     />
                 </div>
             </div>

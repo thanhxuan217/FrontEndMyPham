@@ -149,7 +149,7 @@ export default {
                 <div class="search-input">
                     <input type='search' placeholder="Tìm sản phẩm" />
                     <button>
-                        <BsSearch class="search-icon" />
+                        
                     </button>
                 </div>
                 <div>
