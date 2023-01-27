@@ -4,8 +4,7 @@ import 'vue3-carousel/dist/carousel.css'
 import { Carousel, Slide, Pagination, Navigation } from 'vue3-carousel'
 export default {
     props: {
-        cosmetic: Object,
-        images: Array
+        cosmetic: Object
     },
     components: {
         Carousel,
@@ -44,22 +43,41 @@ export default {
             document.getElementById("target-img").src = e.target.src
             this.isModalShow = true
             document.addEventListener('click', this.handleClickModal, true)
-        }
+        },
+        formatToVND(price) {
+            return VNDCurrencyFormatter.formatToVND(price)
+        },
     },
     computed: {
-        formatToVND() {
-            return VNDCurrencyFormatter.formatToVND(this.cosmetic.PRICE)
-        },
         getId() {
             return 'quick-view ' + this.cosmetic.COSMETIC_ID
         },
         getImages() {
-            const images = this.images.map(image => image.IMAGE_URL)
+            const images = this.cosmetic.images.map(image => image.IMAGE_URL)
             return images
+        },
+        isThisCosmeticDisconting() {
+            return this.cosmetic.discountCalculated.price ? true : false
+        },
+        getDiscount() {
+            if (parseInt(this.cosmetic.discountCalculated.discount.DISCOUNT_CATEGORY) === 1) {
+                const percent = VNDCurrencyFormatter.formatToVND(parseFloat(this.cosmetic.discountCalculated.discount.DISCOUNT_VALUE))
+                return '- ' + percent * 100 + '%'
+            } else if (parseInt(this.cosmetic.discountCalculated.discount.DISCOUNT_CATEGORY) === 2) {
+                const discountValue = parseFloat(this.cosmetic.discountCalculated.discount.DISCOUNT_VALUE)
+                const price = parseFloat(this.cosmetic.discountCalculated.price)
+                const percent = discountValue / price
+                return '- ' + percent * 100 + '%'
+            } else {
+                const price = parseFloat(this.cosmetic.discountCalculated.price)
+                const priceAfterDiscount = parseFloat(this.cosmetic.discountCalculated.priceAfterDiscount)
+                const percent = (price - priceAfterDiscount) / price
+                return '- ' + percent * 100 + '%'
+            }
         }
     },
     mounted() {
-        console.log(this.getImages)
+
     }
 }
 </script>
@@ -88,14 +106,26 @@ export default {
                             <slide v-for="imgUrl in getImages" :key="imgUrl">
                                 <img :src="imgUrl" class="img" @click="showModal" />
                             </slide>
-
                             <template #addons>
                                 <navigation />
                             </template>
                         </carousel>
                     </div>
-                    <div class="price">
-                        {{ formatToVND }}
+                    <div class="product-price">
+                        <div v-if="isThisCosmeticDisconting" class="discount-group">
+                            <div class="apply-price">
+                                {{ formatToVND(cosmetic.discountCalculated.priceAfterDiscount) }}
+                            </div>
+                            <div class="real-price">
+                                {{ formatToVND(cosmetic.discountCalculated.price) }}
+                            </div>
+                            <div class="discount">
+                                {{ getDiscount }}
+                            </div>
+                        </div>
+                        <div v-else>
+                            {{ formatToVND(cosmetic.discountCalculated.price) }}
+                        </div>
                     </div>
                     <div class="add-to-cart-group">
                         <div class="group-btn-input">
@@ -107,7 +137,7 @@ export default {
                     </div>
                     <div class="categories">
                         <div>Thể loại:</div>
-                        <div v-for="item in cosmetic.CATEGORY_DETAIL_ID_category_detail_cosmetic_categories">
+                        <div v-for="item in cosmetic.categories">
                             {{ item.CATEGORY_DETAIL_NAME }}
                         </div>
                     </div>
@@ -126,13 +156,23 @@ export default {
                 {{ cosmetic.COSMETIC_NAME }}
             </div>
             <div class="product-price">
-                <span>
-                    {{ formatToVND }}
-                    &nbsp;
-                </span>
+                <div v-if="isThisCosmeticDisconting" class="discount-group">
+                    <div class="apply-price">
+                        {{ formatToVND(cosmetic.discountCalculated.priceAfterDiscount) }}
+                    </div>
+                    <div class="real-price">
+                        {{ formatToVND(cosmetic.discountCalculated.price) }}
+                    </div>
+                    <div class="discount">
+                        {{ getDiscount }}
+                    </div>
+                </div>
+                <div v-else>
+                    {{ formatToVND(cosmetic.discountCalculated.price) }}
+                </div>
             </div>
             <div class="box-button-add-to-cart">
-                <button id={props.productId} class='button-add-to-cart'>Thêm vào giỏ</button>
+                <button class='button-add-to-cart'>Thêm vào giỏ</button>
             </div>
         </div>
     </div>
@@ -189,7 +229,9 @@ export default {
     justify-content: center;
     align-items: center;
 }
-
+.card-product .quick-view-right .content .product-price {
+    font-size: 20px;
+}
 .card-product .quick-view-content .diaglog-image .close-btn {
     align-self: flex-end;
     font-weight: 600;
@@ -210,8 +252,8 @@ export default {
 }
 
 .card-product .quick-view-content .content .price {
-    font-weight: bold;
-    font-size: 20px;
+    text-align: center;
+    font-size: 17px;
 }
 
 .card-product .quick-view-content .content .add-to-cart-group {
@@ -338,8 +380,36 @@ export default {
 }
 
 .card-product .product-price {
-    font-weight: 500;
     text-align: center;
+    font-size: 17px;
+    width: 100%;
+}
+
+.card-product .discount-group {
+    display: flex;
+    gap: 10px;
+    position: relative;
+    justify-content: center;
+}
+
+.card-product .real-price {
+    display: flex;
+    text-decoration: line-through;
+    color: rgb(124, 122, 122);
+}
+
+.card-product .apply-price {
+    display: flex;
+    justify-content: flex-end;
+    font-weight: 600;
+}
+
+.card-product .discount {
+    display: flex;
+    color: green;
+    justify-content: flex-end;
+    position: absolute;
+    right: 0
 }
 
 .card-product .box-button-add-to-cart {

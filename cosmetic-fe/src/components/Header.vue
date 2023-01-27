@@ -3,13 +3,15 @@ import { useUserStore } from '@/store/userStore'
 import { mapState, mapActions } from 'pinia'
 import AuthenticationAPI from '../api/LoginAPI/authenticationAPI';
 import ProductAPI from '../api/ProductAPI/ProductAPI'
+import { RouterLink } from 'vue-router'
 export default {
     data() {
         return {
             isShowBotHeader: false,
             isShowTopHeader: false,
             categories: [],
-            isShowDropdownMenu: false
+            isShowCategoriesDropdownMenu: false,
+            isShowDiscountsDropdownMenu: false,
         }
     },
     methods: {
@@ -82,9 +84,9 @@ export default {
                     </div>
                 </div>
                 <div v-else class="top-header-account">
-                    <a href='/login' class="none-underline login">
+                    <RouterLink to='/login' class="none-underline login">
                         Đăng nhập
-                    </a> |
+                    </RouterLink> |
                     <a class="none-underline login">
                         Đăng ký
                     </a>
@@ -94,13 +96,14 @@ export default {
         </div>
         <div class='bot-header' :class="{ active: isShowBotHeader }">
             <div class="bot-header-content">
-                <div class="icon">
+                <RouterLink class="icon" to="/">
                     Leo
-                </div>
+                </RouterLink>
                 <ul class="center-menu">
-                    <div class='dropdown-menu' v-show="isShowDropdownMenu">
-                        <div class='dropdown-item' v-for="category in categories"
-                            @mouseleave="isShowDropdownMenu = false" @mouseenter="isShowDropdownMenu = true">
+                    <div class='dropdown-menu' v-show="isShowCategoriesDropdownMenu">
+                        <div class='dropdown-item' v-for="category in categories.categories"
+                            @mouseleave="isShowCategoriesDropdownMenu = false"
+                            @mouseenter="isShowCategoriesDropdownMenu = true">
                             <div class="category-title">
                                 {{ category.CATEGORY_NAME }}
                             </div>
@@ -110,6 +113,15 @@ export default {
                                         {{ categoryDetail.CATEGORY_DETAIL_NAME }}
                                     </a>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='dropdown-menu' v-show="isShowDiscountsDropdownMenu">
+                        <div class='dropdown-item' v-for="discount in categories.discounts"
+                            @mouseleave="isShowDiscountsDropdownMenu = false"
+                            @mouseenter="isShowDiscountsDropdownMenu = true">
+                            <div class="category-title">
+                                {{ discount.DISCOUNT_NAME }}
                             </div>
                         </div>
                     </div>
@@ -131,9 +143,17 @@ export default {
                         </span>
                     </li>
                     <li>
-                        <span class="menu-title" @mouseenter="isShowDropdownMenu = true">
+                        <span class="menu-title" @mouseenter="isShowCategoriesDropdownMenu = true; isShowDiscountsDropdownMenu = false">
                             <a class='none-underline'>
                                 Thể loại
+                                <i class="bi bi-caret-down-fill"></i>
+                            </a>
+                        </span>
+                    </li>
+                    <li>
+                        <span class="menu-title" @mouseenter="isShowDiscountsDropdownMenu = true; isShowCategoriesDropdownMenu = false">
+                            <a class='none-underline'>
+                                Giảm giá
                                 <i class="bi bi-caret-down-fill"></i>
                             </a>
                         </span>
@@ -149,7 +169,7 @@ export default {
                 <div class="search-input">
                     <input type='search' placeholder="Tìm sản phẩm" />
                     <button>
-                        
+
                     </button>
                 </div>
                 <div>
@@ -166,9 +186,11 @@ export default {
 .bot-header {
     border-bottom: 1px solid rgb(219, 208, 208);
 }
+
 .top-header .login {
     color: white;
 }
+
 .bot-header {
     box-shadow: 0px 10px 35px -27px rgb(111, 108, 108);
 }
@@ -244,6 +266,9 @@ export default {
     display: flex;
     align-items: center;
     color: rgb(63, 69, 76);
+    color: white;
+    text-decoration: none;
+    cursor: pointer;
 }
 
 .top-header-content .top-header-account .component .link a {
@@ -338,6 +363,8 @@ export default {
     cursor: pointer;
     align-items: center;
     display: flex;
+    text-decoration: none;
+    color: black;
 }
 
 .bot-header-content .search-input input {

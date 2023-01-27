@@ -31,10 +31,9 @@ export default {
             <div class="content-product">
                 <div class="title">Sản phẩm bán chạy</div>
                 <div class="top-product">
-                    <Card v-for="cartitem in poplularProducts" 
-                        :key="cartitem.COSMETIC.COSMETIC_ID"
-                        :cosmetic= "cartitem.COSMETIC"
-                        :images ="cartitem.images"
+                    <Card v-for="cosmetic in poplularProducts" 
+                        :key="cosmetic.COSMETIC_ID"
+                        :cosmetic= "cosmetic"
                     />
                 </div>
             </div>
