@@ -57,6 +57,9 @@ export default {
             return images
         },
         isThisCosmeticDisconting() {
+            if (!this.cosmetic.discountCalculated) {
+                return false
+            }
             return this.cosmetic.discountCalculated.price ? true : false
         },
         getDiscount() {
@@ -77,7 +80,7 @@ export default {
         }
     },
     mounted() {
-
+        console.log(this.cosmetic)
     }
 }
 </script>
@@ -124,7 +127,7 @@ export default {
                             </div>
                         </div>
                         <div v-else>
-                            {{ formatToVND(cosmetic.discountCalculated.price) }}
+                            {{ formatToVND(cosmetic.PRICE) }}
                         </div>
                     </div>
                     <div class="add-to-cart-group">
@@ -168,7 +171,7 @@ export default {
                     </div>
                 </div>
                 <div v-else>
-                    {{ formatToVND(cosmetic.discountCalculated.price) }}
+                    {{ formatToVND(cosmetic.PRICE) }}
                 </div>
             </div>
             <div class="box-button-add-to-cart">
@@ -340,7 +343,8 @@ export default {
 }
 
 .card-product .img {
-    width: 300px;
+    width: auto;
+    max-width: 300px;
     height: 300px;
     border-radius: 5px;
     border-bottom-right-radius: 0px;
@@ -357,6 +361,7 @@ export default {
 .card-product .product-name {
     text-align: center;
     font-size: 13px;
+    min-height: 53px;
 }
 
 .card-product .img-container {

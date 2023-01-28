@@ -5,8 +5,15 @@ import 'vue-slider-component/theme/antd.css'
 import { reactive } from 'vue'
 import { onMounted } from 'vue'
 import VNDCurrencyFormatter from '../util/VNDCurrencyFormatter'
-
-const state = reactive({ firstPrice: [0, 5000000], categories: [], discounts: [], products: [], queryParam: [] })
+import Card from '../components/Card.vue'
+const state = reactive({
+    firstPrice: [0, 5000000],
+    categories: [],
+    discounts: [],
+    products: [],
+    queryParam: [],
+    filters: []
+})
 
 function toggleDropdownMenu(e) {
     const divId = e.currentTarget.id
@@ -85,7 +92,7 @@ onMounted(() => {
                             <span>
                                 {{
                                     VNDCurrencyFormatter.formatToVND(state.firstPrice[0]) + ': ' +
-                                        VNDCurrencyFormatter.formatToVND(state.firstPrice[1])
+                                    VNDCurrencyFormatter.formatToVND(state.firstPrice[1])
                                 }}
                                 &nbsp;
                             </span>
@@ -119,7 +126,9 @@ onMounted(() => {
                     </select>
                 </div>
             </div>
-            <!-- product container -->
+            <div className="product-result">
+                <Card v-for="cosmetic in state.products" :key="cosmetic.COSMETIC_ID" :cosmetic="cosmetic" />
+            </div>
         </div>
     </div>
 </template>
@@ -128,7 +137,7 @@ onMounted(() => {
     display: flex;
     flex-direction: row;
     gap: 15px;
-    height: 1000px;
+    min-height: 1000px;
 }
 
 .product-page .left-page {
@@ -315,6 +324,6 @@ onMounted(() => {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    gap: 50px;
+    gap: 40px;
 }
 </style>
