@@ -30,6 +30,28 @@ export default {
             else {
                 this.isShowTopHeader = false
             }
+        },
+        goToProductPage(e) {
+            const id = e.currentTarget.id.split(' ')
+            let filter
+            switch (id[0]) {
+                case 'category':
+                    filter = {
+                        categoryIds: [id[1]],
+                        categoryDetailIds: [],
+                        price: [0, 2000000]
+                    }
+                    break
+                case 'categoryDetail':
+                    filter = {
+                        categoryIds: [],
+                        categoryDetailIds: [id[1]],
+                        price: [0, 2000000]
+                    }
+                    break
+            }
+            console.log(filter)
+            this.$router.push({ path: '/products', params: { filter: filter } })
         }
     },
     computed: {
@@ -104,11 +126,14 @@ export default {
                         <div class='dropdown-item' v-for="category in categories.categories"
                             @mouseleave="isShowCategoriesDropdownMenu = false"
                             @mouseenter="isShowCategoriesDropdownMenu = true">
-                            <div class="category-title">
+                            <div class="category-title" :id="'category ' + category.CATEGORY_ID"
+                                @click="goToProductPage">
                                 {{ category.CATEGORY_NAME }}
                             </div>
                             <div class="list-item">
-                                <div class='item' v-for="categoryDetail in category.category_details">
+                                <div class='item' v-for="categoryDetail in category.category_details"
+                                    :id="'categoryDetail ' + categoryDetail.CATEGORY_DETAIL_ID"
+                                    @click="goToProductPage">
                                     <a class='none-underline'>
                                         {{ categoryDetail.CATEGORY_DETAIL_NAME }}
                                     </a>
@@ -143,7 +168,8 @@ export default {
                         </span>
                     </li>
                     <li>
-                        <span class="menu-title" @mouseenter="isShowCategoriesDropdownMenu = true; isShowDiscountsDropdownMenu = false">
+                        <span class="menu-title"
+                            @mouseenter="isShowCategoriesDropdownMenu = true; isShowDiscountsDropdownMenu = false">
                             <a class='none-underline'>
                                 Thể loại
                                 <i class="bi bi-caret-down-fill"></i>
@@ -151,7 +177,8 @@ export default {
                         </span>
                     </li>
                     <li>
-                        <span class="menu-title" @mouseenter="isShowDiscountsDropdownMenu = true; isShowCategoriesDropdownMenu = false">
+                        <span class="menu-title"
+                            @mouseenter="isShowDiscountsDropdownMenu = true; isShowCategoriesDropdownMenu = false">
                             <a class='none-underline'>
                                 Giảm giá
                                 <i class="bi bi-caret-down-fill"></i>

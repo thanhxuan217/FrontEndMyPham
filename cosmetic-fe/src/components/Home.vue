@@ -15,7 +15,6 @@ export default {
         const fetchData = async () => {
             await ProductAPI.getPopularProducts()
                 .then(res => {
-                    console.log(res.data)
                     this.poplularProducts = res.data
                 })
         }

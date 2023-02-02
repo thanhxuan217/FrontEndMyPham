@@ -6,9 +6,9 @@ import { reactive, watch, nextTick } from 'vue'
 import { onMounted } from 'vue'
 import VNDCurrencyFormatter from '../util/VNDCurrencyFormatter'
 import Card from '../components/Card.vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
+const route = useRoute()
 const state = reactive({
-    firstPrice: [0, 5000000],
     categories: [],
     discounts: [],
     products: [],
@@ -17,8 +17,7 @@ const state = reactive({
         categoryIds: [],
         categoryDetailIds: [],
         // discountIds: [],
-        firstPrice: null,
-        lastPrice: null
+        price: [0, 2000000]
     }
 })
 
@@ -72,13 +71,31 @@ async function addFilterProduct(e) {
         //     }
         //     break;
         default:
+            ProductAPI.filterProduct(state.filters)
+                .then(res => {
+                    console.log(res.data)
+                    state.products = res.data
+                })
             break;
     }
     // access state after change
     await nextTick()
     ProductAPI.filterProduct(state.filters)
         .then(res => {
-            console.log(res.data)
+            state.products = res.data
+        })
+}
+async function resetFilter() {
+    state.filters = {
+        categoryIds: [],
+        categoryDetailIds: [],
+        // discountIds: [],
+        price: [0, 2000000]
+    }
+    console.log(state.filters)
+    await nextTick()
+    ProductAPI.filterProduct(state.filters)
+        .then(res => {
             state.products = res.data
         })
 }
@@ -93,17 +110,33 @@ async function addFilterProduct(e) {
 //     }
 // })
 //khi query param thay doi=> load lai products
+watch(
+      () => route.params,
+      async filter => {
+        ProductAPI.filterProduct(filter)
+            .then(res => {
+                state.products = res.data
+            })
+      }
+    )
 onMounted(() => {
     ProductAPI.getAllCategory()
         .then(res => {
             state.categories = res.data.categories
             state.discounts = res.data.discounts
         })
-
-    ProductAPI.filterProduct(state.queryParam)
-        .then(res => {
-            state.products = res.data
-        })
+    console.log(route.params)
+    if (!route.params.filter) {
+        ProductAPI.filterProduct(state.filters)
+            .then(res => {
+                state.products = res.data
+            })
+    } else {
+        ProductAPI.filterProduct(route.params)
+            .then(res => {
+                state.products = res.data
+            })
+    }
 })
 </script>
 <template>
@@ -144,7 +177,7 @@ onMounted(() => {
                 <div class="diver"></div>
                 <div class="filter-content">
                     <div class="slider">
-                        <vue-slider v-model="state.firstPrice" tooltip="hover" min=0 max=5000000
+                        <vue-slider v-model="state.filters.price" tooltip="hover" min=0 max=2000000
                             :tooltip-formatter="val => VNDCurrencyFormatter.formatToVND(val)"
                             :rail-style="{ backgroundColor: 'rgb(174 171 171)' }"
                             :process-style="{ backgroundColor: 'rgb(109, 103, 103)' }"
@@ -156,8 +189,8 @@ onMounted(() => {
                             Giá:
                             <span>
                                 {{
-                                    VNDCurrencyFormatter.formatToVND(state.firstPrice[0]) + ': ' +
-                                        VNDCurrencyFormatter.formatToVND(state.firstPrice[1])
+                                    VNDCurrencyFormatter.formatToVND(state.filters.price[0]) + ': ' +
+                                        VNDCurrencyFormatter.formatToVND(state.filters.price[1])
                                 }}
                                 &nbsp;
                             </span>
@@ -179,7 +212,7 @@ onMounted(() => {
                     </div>
                 </div> -->
             </div>
-            <button class="reset-all-filter">Làm mới lọc</button>
+            <button class="reset-all-filter" @click="resetFilter">Làm mới lọc</button>
         </div>
         <div class="right-page">
             <div class="sort">
