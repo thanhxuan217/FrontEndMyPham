@@ -58,6 +58,7 @@ code {
 .none-underline {
   text-decoration: none;
   cursor: pointer;
+  color: black;
 }
 
 .group-select {

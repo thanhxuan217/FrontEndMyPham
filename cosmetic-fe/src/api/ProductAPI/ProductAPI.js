@@ -9,5 +9,8 @@ class ProductAPI {
     static async filterProduct(queryParam) {
         return await axiosPath.default().get('/api/product/filterProduct', { params: queryParam });
     }
+    static async getProductsByDiscountId(discountId) {
+        return await axiosPath.default().get('/api/product/getProductByDiscountId/' + discountId);
+    }
 }
 export default ProductAPI

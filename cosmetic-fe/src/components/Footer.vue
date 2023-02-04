@@ -22,7 +22,7 @@ export default {
         <div class="card-footer">
             <span class="title-footer">GIỚI THIỆU</span>
             <div class="content-footer">
-                Chào mừng bạn đến với ABC Sneaker! Tại đây, bạn sẽ tìm được đôi giày phù hợp với bản thân mình
+                Welcome
             </div>
         </div>
         <div class="card-footer">
@@ -60,7 +60,7 @@ export default {
         </div>
     </div>
     <div class="bot-footer">
-        © Copyright: Huynh Thanh Xuan
+        © Copyright: Nguyễn Hà Kim Anh
     </div>
 </footer>
 </template>

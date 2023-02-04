@@ -33,7 +33,12 @@ export default {
         },
         goToProductPage(e) {
             const id = e.currentTarget.id.split(' ')
-            let filter
+            let discountId = null
+            let filter = {
+                categoryIds: [],
+                categoryDetailIds: [],
+                price: [0, 2000000]
+            }
             switch (id[0]) {
                 case 'category':
                     filter = {
@@ -49,9 +54,22 @@ export default {
                         price: [0, 2000000]
                     }
                     break
+                case 'product':
+                    filter = {
+                        categoryIds: [],
+                        categoryDetailIds: [],
+                        price: [0, 2000000]
+                    }
+                    break
+                default:
+                    discountId = id[1]
+                    break
             }
-            console.log(filter)
-            this.$router.push({ path: '/products', params: { filter: filter } })
+            if (discountId) {
+                this.$router.push({ name: 'products', query: { discountId: discountId }, replace: true })
+            } else {
+                this.$router.push({ name: 'products', query: { categoryIds: filter.categoryIds, categoryDetailIds: filter.categoryDetailIds, price: filter.price }, replace: true })
+            }
         }
     },
     computed: {
@@ -122,10 +140,10 @@ export default {
                     Leo
                 </RouterLink>
                 <ul class="center-menu">
-                    <div class='dropdown-menu' v-show="isShowCategoriesDropdownMenu">
-                        <div class='dropdown-item' v-for="category in categories.categories"
-                            @mouseleave="isShowCategoriesDropdownMenu = false"
-                            @mouseenter="isShowCategoriesDropdownMenu = true">
+                    <div class='dropdown-menu' v-show="isShowCategoriesDropdownMenu"
+                        @mouseleave="isShowCategoriesDropdownMenu = false"
+                        @mouseenter="isShowCategoriesDropdownMenu = true">
+                        <div class='dropdown-item' v-for="category in categories.categories">
                             <div class="category-title" :id="'category ' + category.CATEGORY_ID"
                                 @click="goToProductPage">
                                 {{ category.CATEGORY_NAME }}
@@ -141,11 +159,11 @@ export default {
                             </div>
                         </div>
                     </div>
-                    <div class='dropdown-menu' v-show="isShowDiscountsDropdownMenu">
-                        <div class='dropdown-item' v-for="discount in categories.discounts"
-                            @mouseleave="isShowDiscountsDropdownMenu = false"
-                            @mouseenter="isShowDiscountsDropdownMenu = true">
-                            <div class="category-title">
+                    <div class='dropdown-menu discount' v-show="isShowDiscountsDropdownMenu"
+                        @mouseleave="isShowDiscountsDropdownMenu = false"
+                        @mouseenter="isShowDiscountsDropdownMenu = true">
+                        <div class='dropdown-item' v-for="discount in categories.discounts">
+                            <div class="category-title" :id="'discount '+discount.DISCOUNT_ID" @click="goToProductPage">
                                 {{ discount.DISCOUNT_NAME }}
                             </div>
                         </div>
@@ -162,7 +180,7 @@ export default {
                     </li>
                     <li>
                         <span class="menu-title">
-                            <a class='none-underline'>
+                            <a class='none-underline' id='product all' @click="goToProductPage">
                                 Tất cả sản phẩm
                             </a>
                         </span>
@@ -448,6 +466,7 @@ export default {
     animation-name: toggle-dropdownmenu;
     animation-duration: 0.2s;
     padding-top: 20px;
+    border-bottom: solid 1px rgb(231, 227, 227);
 }
 
 @keyframes toggle-dropdownmenu {
@@ -464,6 +483,11 @@ export default {
     display: flex;
 }
 
+.center-menu .discount {
+    gap: 30px
+}
+
+
 /* .center-menu .menu-title:hover {
     cursor: pointer;
     border-bottom: solid 2px black;
@@ -473,7 +497,7 @@ export default {
     list-style: none;
     display: flex;
     flex-direction: column;
-    padding: 0;
+    padding-bottom: 30px;
 }
 
 .current-path {

@@ -2,12 +2,13 @@
 import ProductAPI from '../api/ProductAPI/ProductAPI'
 import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/antd.css'
-import { reactive, watch, nextTick } from 'vue'
+import { reactive, watch, nextTick, computed, ref } from 'vue'
 import { onMounted } from 'vue'
 import VNDCurrencyFormatter from '../util/VNDCurrencyFormatter'
 import Card from '../components/Card.vue'
-import { RouterLink, useRoute } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 const route = useRoute()
+const sort = ref(1)
 const state = reactive({
     categories: [],
     discounts: [],
@@ -43,21 +44,27 @@ async function addFilterProduct(e) {
             // check class if active => add, else remove
             if (e.currentTarget.className === 'category-name') {
                 e.currentTarget.className = 'category-name active'
-                state.filters.categoryIds.push(id)
+                const newFilter = [...state.filters.categoryIds, id]
+                state.filters.categoryIds = newFilter
             } else {
                 e.currentTarget.className = 'category-name'
-                const newFilter = state.filters.categoryIds.filter(categoryId => Number(categoryId) !== Number(id))
+                const arrayFilter = [...state.filters.categoryIds]
+                const newFilter = arrayFilter.filter(categoryId => Number(categoryId) !== Number(id))
                 state.filters.categoryIds = newFilter
             }
             break;
         case 'categoryDetail':
             if (e.currentTarget.className === 'category-detail') {
                 e.currentTarget.className = 'category-detail active'
-                state.filters.categoryDetailIds.push(id)
+                state.filters.categoryIds = []
+                const newFilter = [...state.filters.categoryDetailIds, id]
+                state.filters.categoryDetailIds = newFilter
             } else {
                 e.currentTarget.className = 'category-detail'
-                const newFilter = state.filters.categoryDetailIds.filter(categoryDetailId => Number(categoryDetailId) !== Number(id))
+                const arrayFilter = [...state.filters.categoryIds]
+                const newFilter = arrayFilter.filter(categoryDetailId => Number(categoryDetailId) !== Number(id))
                 state.filters.categoryDetailIds = newFilter
+
             }
             break;
         // case 'discount':
@@ -92,7 +99,6 @@ async function resetFilter() {
         // discountIds: [],
         price: [0, 2000000]
     }
-    console.log(state.filters)
     await nextTick()
     ProductAPI.filterProduct(state.filters)
         .then(res => {
@@ -110,29 +116,97 @@ async function resetFilter() {
 //     }
 // })
 //khi query param thay doi=> load lai products
+const getProductsSorted = computed(() => {
+    if (Number(sort.value) === 1) {
+        const productSorted = state.products.sort((p1, p2) => {
+            const p1Id = Number(p1.COSMETIC_ID)
+            const p2Id = Number(p2.COSMETIC_ID)
+            return p1Id - p2Id
+        })
+        return productSorted
+    } else if (Number(sort.value) === 2) {
+        const productSorted = state.products.sort((p1, p2) => {
+            const price1 = p1.discountCalculated ? p1.discountCalculated.priceAfterDiscount : p1.PRICE
+            const price2 = p2.discountCalculated ? p2.discountCalculated.priceAfterDiscount : p2.PRICE
+            return Number(price1) - Number(price2)
+        })
+        return productSorted
+    } else {
+        const productSorted = state.products.sort((p1, p2) => {
+            const price1 = p1.discountCalculated ? p1.discountCalculated.priceAfterDiscount : p1.PRICE
+            const price2 = p2.discountCalculated ? p2.discountCalculated.priceAfterDiscount : p2.PRICE
+            return Number(price2) - Number(price1)
+        })
+        return productSorted
+    }
+
+})
+
+function isThisCategoryInclude(categoryId) {
+    if (!route.query.categoryIds) {
+        return false
+    }
+    return route.query.categoryIds.includes(categoryId + '')
+}
+function isThisCategoryDetailInclude(categoryDetailId, categoryId) {
+    if (!route.query.categoryDetailIds) {
+        return false
+    }
+    // toggle menu
+    if (route.query.categoryDetailIds.includes(categoryDetailId + '')) {
+        const dropdownId = categoryId + " dropdown"
+        const toggleMenu = document.getElementById(dropdownId)
+        const iconId = categoryId + ' arrow'
+        const iconMenu = document.getElementById(iconId)
+        if (toggleMenu) {
+            toggleMenu.className += ' active'
+        }
+        if (iconMenu) {
+            iconMenu.className += ' active-icon'
+        }
+        return true
+    }
+
+}
 watch(
-      () => route.params,
-      async filter => {
-        ProductAPI.filterProduct(filter)
-            .then(res => {
-                state.products = res.data
-            })
-      }
-    )
+    // khi route query thay doi => run
+    () => route.query,
+    async filter => {
+        if (route.query.discountId) {
+            ProductAPI.getProductsByDiscountId(route.query.discountId)
+                .then(res => {
+                    state.products = res.data
+                })
+        } else {
+            state.filters = route.query
+            ProductAPI.filterProduct(filter)
+                .then(res => {
+                    state.products = res.data
+                })
+        }
+    }
+)
 onMounted(() => {
     ProductAPI.getAllCategory()
         .then(res => {
             state.categories = res.data.categories
             state.discounts = res.data.discounts
         })
-    console.log(route.params)
-    if (!route.params.filter) {
-        ProductAPI.filterProduct(state.filters)
-            .then(res => {
-                state.products = res.data
-            })
+    if (route.query) {
+        if (route.query.discountId) {
+            ProductAPI.getProductsByDiscountId(route.query.discountId)
+                .then(res => {
+                    state.products = res.data
+                })
+        } else {
+            state.filters = route.query
+            ProductAPI.filterProduct(route.query)
+                .then(res => {
+                    state.products = res.data
+                })
+        }
     } else {
-        ProductAPI.filterProduct(route.params)
+        ProductAPI.filterProduct(state.filters)
             .then(res => {
                 state.products = res.data
             })
@@ -155,7 +229,8 @@ onMounted(() => {
                     <div class="categories" v-for="category in state.categories">
                         <div class="category">
                             <div class="category-name" :id="category.CATEGORY_ID + ' category'"
-                                @click="addFilterProduct">
+                                @click="addFilterProduct"
+                                :class="{ active: isThisCategoryInclude(category.CATEGORY_ID) }">
                                 {{ category.CATEGORY_NAME }}
                             </div>
                             <div class="dropdown-icon" :id="category.CATEGORY_ID + ' arrow'"
@@ -165,7 +240,9 @@ onMounted(() => {
                         </div>
                         <div class="category-details" :id="category.CATEGORY_ID + ' dropdown'">
                             <div class="category-detail" v-for="categoryDetail in category.category_details"
-                                :id="categoryDetail.CATEGORY_DETAIL_ID + ' categoryDetail'" @click="addFilterProduct">
+                                :id="categoryDetail.CATEGORY_DETAIL_ID + ' categoryDetail'" @click="addFilterProduct"
+                                :class="{ active: isThisCategoryDetailInclude(categoryDetail.CATEGORY_DETAIL_ID, category.CATEGORY_ID) }"
+                                :categoryId="category.CATEGORY_ID">
                                 {{ categoryDetail.CATEGORY_DETAIL_NAME }}
                             </div>
                         </div>
@@ -177,7 +254,7 @@ onMounted(() => {
                 <div class="diver"></div>
                 <div class="filter-content">
                     <div class="slider">
-                        <vue-slider v-model="state.filters.price" tooltip="hover" min=0 max=2000000
+                        <vue-slider v-model="state.filters.price" tooltip="hover" :min=0 :max=5000000
                             :tooltip-formatter="val => VNDCurrencyFormatter.formatToVND(val)"
                             :rail-style="{ backgroundColor: 'rgb(174 171 171)' }"
                             :process-style="{ backgroundColor: 'rgb(109, 103, 103)' }"
@@ -217,16 +294,16 @@ onMounted(() => {
         <div class="right-page">
             <div class="sort">
                 <div class="sort-container">
-                    <span>Tìm được tất cả kết quả</span>
-                    <select class="select-input" onChange={handleSortProduct}>
-                        <option value='1'>Sắp xếp theo: mới nhất</option>
-                        <option value='2'>Sắp xếp theo: giá thấp đến cao</option>
-                        <option value='3'>Sắp xếp theo: giá cao đến thấp</option>
+                    <span>Tìm được tất cả {{ state.products.length }} kết quả</span>
+                    <select class="select-input" v-model="sort">
+                        <option value=1>Sắp xếp theo: mới nhất</option>
+                        <option value=2>Sắp xếp theo: giá thấp đến cao</option>
+                        <option value=3>Sắp xếp theo: giá cao đến thấp</option>
                     </select>
                 </div>
             </div>
             <div className="product-result">
-                <Card v-for="cosmetic in state.products" :key="cosmetic.COSMETIC_ID" :cosmetic="cosmetic" />
+                <Card v-for="cosmetic in getProductsSorted" :key="cosmetic.COSMETIC_ID" :cosmetic="cosmetic" />
             </div>
         </div>
     </div>
