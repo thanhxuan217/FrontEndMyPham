@@ -12,5 +12,8 @@ class ProductAPI {
     static async getProductsByDiscountId(discountId) {
         return await axiosPath.default().get('/api/product/getProductByDiscountId/' + discountId);
     }
+    static async searchProduct(keyword) {
+        return await axiosPath.default().get('/api/product/searchProductByKeyword', { params: { keyword: keyword } });
+    }
 }
 export default ProductAPI

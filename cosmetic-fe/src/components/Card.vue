@@ -327,7 +327,7 @@ export default {
 .card-product .quick-view-content .card-product .box-text {
     padding: 10px 10px;
     display: flex;
-    gap: 1px;
+    gap: 2px;
     flex-direction: column;
 }
 
@@ -361,7 +361,7 @@ export default {
 .card-product .product-name {
     text-align: center;
     font-size: 13px;
-    min-height: 53px;
+    min-height: 58px;
 }
 
 .card-product .img-container {

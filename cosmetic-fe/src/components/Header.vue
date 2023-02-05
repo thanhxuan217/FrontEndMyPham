@@ -12,6 +12,7 @@ export default {
             categories: [],
             isShowCategoriesDropdownMenu: false,
             isShowDiscountsDropdownMenu: false,
+            keyword: null
         }
     },
     methods: {
@@ -70,6 +71,9 @@ export default {
             } else {
                 this.$router.push({ name: 'products', query: { categoryIds: filter.categoryIds, categoryDetailIds: filter.categoryDetailIds, price: filter.price }, replace: true })
             }
+        },
+        searchProduct() {
+            this.$router.push({ name: 'search', query: { keyword: this.keyword }, replace: true })
         }
     },
     computed: {
@@ -84,7 +88,13 @@ export default {
             return this.userInfo !== null ? true : false
         },
         currentRouteName() {
-            return this.$router.currentRoute.value.path
+            return this.$router.currentRoute.value.fullPath
+        },
+        isPathIncludeCategory() {
+            return this.$router.currentRoute.value.fullPath.includes('category')
+        },
+        isPathIncludeyDiscountId() {
+            return this.$router.currentRoute.value.fullPath.includes('discountId')
         }
     },
     mounted() {
@@ -116,7 +126,7 @@ export default {
                 <div v-if="isLogged" className="top-header-account">
                     <div className="title">
                         <div>
-                            <img src="" class="avatar" alt="image" />
+                            <!-- <img src="" class="avatar" alt="image" /> -->
                         </div>
                         <div class="text">
                             Xin chào, {{ getUserName }}
@@ -140,10 +150,10 @@ export default {
                     Leo
                 </RouterLink>
                 <ul class="center-menu">
-                    <div class='dropdown-menu' v-show="isShowCategoriesDropdownMenu"
+                    <div class='my-dropdown-menu' v-show="isShowCategoriesDropdownMenu"
                         @mouseleave="isShowCategoriesDropdownMenu = false"
                         @mouseenter="isShowCategoriesDropdownMenu = true">
-                        <div class='dropdown-item' v-for="category in categories.categories">
+                        <div class='my-dropdown-item' v-for="category in categories.categories">
                             <div class="category-title" :id="'category ' + category.CATEGORY_ID"
                                 @click="goToProductPage">
                                 {{ category.CATEGORY_NAME }}
@@ -159,45 +169,55 @@ export default {
                             </div>
                         </div>
                     </div>
-                    <div class='dropdown-menu discount' v-show="isShowDiscountsDropdownMenu"
+                    <div class='my-dropdown-menu discount' v-show="isShowDiscountsDropdownMenu"
                         @mouseleave="isShowDiscountsDropdownMenu = false"
                         @mouseenter="isShowDiscountsDropdownMenu = true">
-                        <div class='dropdown-item' v-for="discount in categories.discounts">
-                            <div class="category-title" :id="'discount '+discount.DISCOUNT_ID" @click="goToProductPage">
+                        <div class='my-dropdown-item' v-for="discount in categories.discounts">
+                            <div class="category-title" :id="'discount ' + discount.DISCOUNT_ID"
+                                @click="goToProductPage">
                                 {{ discount.DISCOUNT_NAME }}
                             </div>
                         </div>
                     </div>
                     <li>
                         <span class="menu-title">
-                            <a class='none-underline'>
-                                <span :class="currentRouteName === '/' ? 'current-path' : ''">
-                                    <i class="bi bi-house-door-fill"></i>
-                                    <span>Trang chủ</span>
-                                </span>
-                            </a>
+                            <RouterLink to="/" class='none-underline'
+                                :class="currentRouteName === '/' ? 'current-path' : ''">
+                                <i class="bi bi-house-door-fill"></i>
+                                <span>Trang chủ</span>
+                            </RouterLink>
                         </span>
                     </li>
                     <li>
                         <span class="menu-title">
-                            <a class='none-underline' id='product all' @click="goToProductPage">
+                            <RouterLink id='product all' 
+                            class='none-underline' 
+                            to="/products?price=0&price=2000000" 
+                            :class="currentRouteName === '/products?price=0&price=2000000' ? 'current-path' : ''">
                                 Tất cả sản phẩm
-                            </a>
+                            </RouterLink>
                         </span>
                     </li>
                     <li>
                         <span class="menu-title"
-                            @mouseenter="isShowCategoriesDropdownMenu = true; isShowDiscountsDropdownMenu = false">
-                            <a class='none-underline'>
+                            @mouseenter="isShowCategoriesDropdownMenu = true;
+                             isShowDiscountsDropdownMenu = false">
+                            <a class='none-underline'
+                            :class="{'current-path': isPathIncludeCategory}"
+                            >
                                 Thể loại
-                                <i class="bi bi-caret-down-fill"></i>
+                                <i class="bi bi-caret-down-fill">
+
+                                </i>
                             </a>
                         </span>
                     </li>
                     <li>
                         <span class="menu-title"
                             @mouseenter="isShowDiscountsDropdownMenu = true; isShowCategoriesDropdownMenu = false">
-                            <a class='none-underline'>
+                            <a class='none-underline' 
+                            :class="{'current-path': isPathIncludeyDiscountId}"
+                            >
                                 Giảm giá
                                 <i class="bi bi-caret-down-fill"></i>
                             </a>
@@ -212,9 +232,9 @@ export default {
                     </li>
                 </ul>
                 <div class="search-input">
-                    <input type='search' placeholder="Tìm sản phẩm" />
-                    <button>
-
+                    <input type='search' v-model="keyword" placeholder="Tìm sản phẩm" />
+                    <button @click="searchProduct">
+                        <i class="bi bi-search"></i>
                     </button>
                 </div>
                 <div>
@@ -454,7 +474,7 @@ export default {
 
 
 /* absolute dua vao position cha, neu ko co => html */
-.center-menu .dropdown-menu {
+.center-menu .my-dropdown-menu {
     display: flex;
     width: 100%;
     position: absolute;
@@ -493,7 +513,7 @@ export default {
     border-bottom: solid 2px black;
 } */
 
-.dropdown-menu .dropdown-item {
+.my-dropdown-menu .my-dropdown-item {
     list-style: none;
     display: flex;
     flex-direction: column;
@@ -504,7 +524,7 @@ export default {
     color: #909b6b;
 }
 
-.dropdown-menu .dropdown-item .item {
+.my-dropdown-menu .my-dropdown-item .item {
     text-transform: capitalize;
     width: 230px;
     font-weight: 400;
@@ -513,12 +533,12 @@ export default {
 }
 
 .center-menu .menu-title:hover,
-.dropdown-menu .dropdown-item .item:hover,
-.dropdown-menu .dropdown-item .category-title:hover {
+.my-dropdown-menu .my-dropdown-item .item:hover,
+.my-dropdown-menu .my-dropdown-item .category-title:hover {
     color: #909b6b;
 }
 
-.dropdown-menu .dropdown-item .category-title {
+.my-dropdown-menu .my-dropdown-item .category-title {
     margin-bottom: 10px;
     cursor: pointer;
 }
