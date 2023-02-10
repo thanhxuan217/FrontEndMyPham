@@ -83,7 +83,7 @@ export default {
     justify-content: center;
     border-radius: 10px;
     height: fit-content;
-    box-shadow: 0 0 35px 0 rgb(224, 220, 220);
+    box-shadow: 0 0 35px 0 rgb(191 188 188);
     background: #fff;
     gap: 13px;
     padding: 50px;
@@ -122,7 +122,7 @@ export default {
 }
 
 .content-login a {
-    color: #3a7afe;
+    color: #909b6b;
     text-decoration: none;
 }
 
@@ -178,8 +178,8 @@ export default {
 
 .content-login .btn-login {
     height: 45px;
-    background-color: #3a7afe;
-    border-color: #3a7afe;
+    background-color: #909b6b;
+    border-color: #909b6b;
     color: white;
     font-weight: 500;
     border-radius: 10px;

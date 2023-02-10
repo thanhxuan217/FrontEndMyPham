@@ -415,6 +415,9 @@ export default {
 .bot-header-content .center-menu a {
     cursor: pointer;
 }
+.bot-header-content .center-menu a:hover {
+    color: #909b6b;
+}
 
 .bot-header-content .search-input {
     display: flex;

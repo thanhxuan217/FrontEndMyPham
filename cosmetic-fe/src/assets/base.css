@@ -13,6 +13,12 @@ body,
   font-size: 15px;
 }
 
+input {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif !important;
+}
+
 .container {
   padding: 50px 100px;
 }
@@ -108,6 +114,7 @@ code {
   display: flex;
   text-decoration: none;
 }
+
 .error-page {
   min-height: 300px;
   padding-top: 200px;
@@ -117,19 +124,83 @@ code {
   margin-left: 225px;
 }
 .pagination {
-  cursor: pointer!important;
-  --bs-pagination-focus-box-shadow: 0 0 0 0.25rem #d1d1ba!important;
-  --bs-pagination-active-bg: #909b6b!important;
-  --bs-pagination-active-border-color: #909b6b!important;
+  --bs-pagination-padding-x: 0.75rem;
+  --bs-pagination-padding-y: 0.375rem;
+  --bs-pagination-font-size: 1rem;
+  --bs-pagination-color: var(--bs-link-color);
+  --bs-pagination-bg: #fff;
+  --bs-pagination-border-width: 1px;
+  --bs-pagination-border-color: #dee2e6;
+  --bs-pagination-border-radius: 0.375rem;
+  --bs-pagination-hover-color: var(--bs-link-hover-color);
+  --bs-pagination-hover-bg: #e9ecef;
+  --bs-pagination-hover-border-color: #dee2e6;
+  --bs-pagination-focus-color: var(--bs-link-hover-color);
+  --bs-pagination-focus-bg: #e9ecef;
+  --bs-pagination-focus-box-shadow: 0 0 0 0.25rem #d1d1ba !important;
+  --bs-pagination-active-color: #fff;
+  --bs-pagination-active-bg: #909b6b !important;
+  --bs-pagination-active-border-color: #909b6b !important;
+  --bs-pagination-disabled-color: #6c757d;
+  --bs-pagination-disabled-bg: #fff;
+  --bs-pagination-disabled-border-color: #dee2e6;
   display: flex;
   padding-left: 0;
   list-style: none;
-}
-.page-link {
-  color: black!important;
+  cursor: pointer !important;
 }
 
-.active>.page-link, .page-link.active {
+
+.page-link {
+  position: relative;
+  display: block;
+  padding: 0.5rem .75rem;
+  margin-left: -1px;
+  font-size: 0.875rem;
+  color: var(--bs-pagination-color);
+  text-decoration: none;
+  background-color:#fff;
+  border: 1px solid #dee2e6;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+.page-link:hover {
+  z-index: 2;
+  color: var(--bs-pagination-hover-color);
+  background-color: #e9ecef;
+  border-color: #dee2e6;
+}
+.page-link:focus {
+  z-index: 3;
+  color: var(--bs-pagination-focus-color);
+  background-color: var(--bs-pagination-focus-bg);
+  outline: 0;
+  box-shadow: var(--bs-pagination-focus-box-shadow);
+}
+.page-link.active, .active > .page-link {
+  z-index: 3;
+  color: var(--bs-pagination-active-color);
+  background-color: var(--bs-pagination-active-bg);
+  border-color: var(--bs-pagination-active-border-color);
+}
+.page-link.disabled, .disabled > .page-link {
+  color: var(--bs-pagination-disabled-color);
+  pointer-events: none;
+  background-color: var(--bs-pagination-disabled-bg);
+  border-color: var(--bs-pagination-disabled-border-color);
+}
+
+.page-item:not(:first-child) .page-link {
+  margin-left: -1px;
+}
+.page-item:first-child .page-link {
+  border-top-left-radius: var(--bs-pagination-border-radius);
+  border-bottom-left-radius: var(--bs-pagination-border-radius);
+}
+.page-item:last-child .page-link {
+  border-top-right-radius: var(--bs-pagination-border-radius);
+  border-bottom-right-radius: var(--bs-pagination-border-radius);
+}
+/* .active>.page-link, .page-link.active {
   color: white!important;
 
-}
+}  */

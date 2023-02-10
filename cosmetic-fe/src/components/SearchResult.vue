@@ -40,7 +40,11 @@ const getProductsSorted = computed(() => {
 
 })
 async function pagination(pageNum) {
-    console.log(pageNum)
+    ProductAPI.searchProduct(route.query.keyword, pageNum, 8)
+        .then(res => {
+            console.log(res.data)
+            state.products = res.data
+        })
 }
 onMounted(() => {
     if (route.query) {
