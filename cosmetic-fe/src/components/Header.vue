@@ -190,21 +190,16 @@ export default {
                     </li>
                     <li>
                         <span class="menu-title">
-                            <RouterLink id='product all' 
-                            class='none-underline' 
-                            to="/products?price=0&price=2000000" 
-                            :class="currentRouteName === '/products?price=0&price=2000000' ? 'current-path' : ''">
+                            <RouterLink id='product all' class='none-underline' to="/products?price=0&price=2000000"
+                                :class="currentRouteName === '/products?price=0&price=2000000' ? 'current-path' : ''">
                                 Tất cả sản phẩm
                             </RouterLink>
                         </span>
                     </li>
                     <li>
-                        <span class="menu-title"
-                            @mouseenter="isShowCategoriesDropdownMenu = true;
-                             isShowDiscountsDropdownMenu = false">
-                            <a class='none-underline'
-                            :class="{'current-path': isPathIncludeCategory}"
-                            >
+                        <span class="menu-title" @mouseenter="isShowCategoriesDropdownMenu = true;
+                        isShowDiscountsDropdownMenu = false">
+                            <a class='none-underline' :class="{ 'current-path': isPathIncludeCategory }">
                                 Thể loại
                                 <i class="bi bi-caret-down-fill">
 
@@ -215,9 +210,7 @@ export default {
                     <li>
                         <span class="menu-title"
                             @mouseenter="isShowDiscountsDropdownMenu = true; isShowCategoriesDropdownMenu = false">
-                            <a class='none-underline' 
-                            :class="{'current-path': isPathIncludeyDiscountId}"
-                            >
+                            <a class='none-underline' :class="{ 'current-path': isPathIncludeyDiscountId }">
                                 Giảm giá
                                 <i class="bi bi-caret-down-fill"></i>
                             </a>
@@ -239,7 +232,10 @@ export default {
                 </div>
                 <div>
                     <a class="cart-icon">
-                        <i class="bi bi-cart"></i>
+                        <RouterLink class='none-underline' to="/cart">
+                            <i class="bi bi-cart"></i>
+                        </RouterLink>
+
                     </a>
                 </div>
             </div>
@@ -415,6 +411,7 @@ export default {
 .bot-header-content .center-menu a {
     cursor: pointer;
 }
+
 .bot-header-content .center-menu a:hover {
     color: #909b6b;
 }

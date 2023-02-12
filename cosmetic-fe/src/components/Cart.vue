@@ -1,55 +1,104 @@
 <script setup>
-import ProductAPI from '../api/ProductAPI/ProductAPI'
-import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/antd.css'
 import { reactive, watch, nextTick, computed, ref } from 'vue'
 import { onMounted } from 'vue'
 import VNDCurrencyFormatter from '../util/VNDCurrencyFormatter'
-import Card from '../components/Card.vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import Paginate from "vuejs-paginate-next"
-
+import CartAPI from '../api/CartAPI/CartAPI'
 const route = useRoute()
 const sort = ref(1)
 const page = ref(1)
+const loading = ref(true)
 const state = reactive({
-    products: null,
+    cartItems: [],
 })
 
-
+function getPercent(price, priceAfterDiscount) {
+    const percent = ((parseFloat(price) - parseFloat(priceAfterDiscount || 0)) / parseFloat(price)).toFixed(3)
+    return '- ' + percent * 100 + '%'
+}
+function getSumprice(price, quantity) {
+    return VNDCurrencyFormatter.formatToVND((parseFloat(price) * parseInt(quantity)).toFixed(3))
+}
+function minusOrPlusQuantity(e) {
+    const id = e.target.id.split(' ')
+    const cosmeticId = state.cartItems[id[0]].cosmetic.COSMETIC_ID
+    const currentQuantity = state.cartItems[id[0]].quantity
+    loading.value = true
+    switch (id[1]) {
+        case 'btn-plus':
+            CartAPI.updateCartItem(cosmeticId, 1).then(
+                CartAPI.getCartItem().then(async res => {
+                    state.cartItems = res.data
+                    // access after change
+                    setTimeout(() => loading.value = false, 2000)
+                })
+            )
+            break
+        default:
+            CartAPI.updateCartItem(cosmeticId, -1).then(
+                CartAPI.getCartItem().then(async res => {
+                    state.cartItems = res.data
+                    setTimeout(() => loading.value = false, 2000)
+                })
+            )
+            break
+    }
+}
 onMounted(() => {
-
+    CartAPI.getCartItem().then(async res => {
+        state.cartItems = res.data
+        loading.value = false
+    })
 })
 </script>
 <template>
-    <div class='cart-container'>
+    <div class='cart-container' v-if="!loading">
         <div class='left-cart'>
             <table class='cart-table'>
                 <thead>
                     <tr class='head'>
                         <td width="50%">Sản phẩm</td>
                         <td width="15%">Đơn giá</td>
-                        <td width="25%">Số lượng</td>
-                        <td width="10%" class="thanhtien">Thành tiền</td>
+                        <td width="10%">Số lượng</td>
+                        <td width="15%" class="thanhtien">Thành tiền</td>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td width="50%" class='product'>
-                            
+                    <tr v-for="(cartItem, index) in state.cartItems">
+                        <td width="50%">
+                            <div class='product'>
+                                <img alt='img' :src="cartItem.cosmetic.IMAGE.IMAGE_URL" />
+                                {{ cartItem.cosmetic.COSMETIC_NAME }}
+                            </div>
                         </td>
                         <td>
-                            
+                            <div class="price">
+                                <div class="price-after-sale">
+                                    {{ VNDCurrencyFormatter.formatToVND(cartItem.discount.priceAfterDiscount) }}
+                                </div>
+                                <div class='price-sale'>
+                                    <label class='real-price'>
+                                        {{ VNDCurrencyFormatter.formatToVND(cartItem.cosmetic.PRICE) }}
+                                    </label>
+                                    &nbsp;|&nbsp;
+                                    <label class='percent-discount'>
+                                        {{ getPercent(cartItem.discount.price, cartItem.discount.priceAfterDiscount) }}
+                                    </label>
+                                </div>
+                            </div>
                         </td>
-                        <td class='group-select-cart'>
-                            
+                        <td>
+                            <div class='quantity'>
+                                <button :id="index + ' btn-minus'" @click="minusOrPlusQuantity">-</button>
+                                <input class='input-quantity' :value="cartItem.quantity" />
+                                <button :id="index + ' btn-plus'" @click="minusOrPlusQuantity">+</button>
+                            </div>
                         </td>
-
-                        <td width="10%" class="thanhtien">
-                            
+                        <td width="15%" class="thanhtien">
+                            {{ getSumprice(cartItem.discount.priceAfterDiscount, cartItem.quantity) }}
                         </td>
                     </tr>
-
                 </tbody>
                 <tfoot>
                     <tr>
@@ -70,7 +119,7 @@ onMounted(() => {
         </div>
         <div class='right-cart-container'>
             <div class='right-cart'>
-                
+
                 <div class='content'>
                     <div class='row'>
                         <div class='row-title'>Tạm tính: </div>
@@ -194,18 +243,34 @@ onMounted(() => {
     padding: 1px 2px;
 }
 
+.cart-container .left-cart .cart-table tbody .price {
+    font-size: 15px;
+}
+
+.cart-container .left-cart .cart-table tbody .price .price-after-sale {
+    font-weight: bold;
+}
+
 .cart-container .left-cart .cart-table tbody .product {
     display: flex;
     align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.cart-container .left-cart .cart-table tbody .product img {
+    width: 70px;
+    height: 70px;
 }
 
 .cart-container .left-cart .cart-table tbody .quantity {
     min-width: 100px;
+    display: flex;
 }
 
 .cart-container .left-cart .cart-table tbody .quantity button {
     border: 1px solid rgb(219, 215, 215);
-    padding: 10px 10px;
+    padding: 8px 8px;
     cursor: pointer;
 }
 
@@ -213,7 +278,7 @@ onMounted(() => {
     width: 20px;
     text-align: center;
     border: 1px solid rgb(219, 215, 215);
-    padding: 10px 10px;
+    padding: 8px 8px;
 }
 
 .cart-container .left-cart .cart-table tbody .quantity .input-quantity:focus {
@@ -303,13 +368,16 @@ onMounted(() => {
     cursor: pointer;
     width: fit-content;
 }
+
 .thanhtien {
     text-align: end;
 }
+
 .cart-container .foot {
     display: flex;
     justify-content: space-between;
 }
+
 .cart-container .foot .update button {
     padding: 8px 15px;
     border: 2px solid #d66a12;
