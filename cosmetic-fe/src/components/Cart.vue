@@ -20,31 +20,49 @@ function getPercent(price, priceAfterDiscount) {
 function getSumprice(price, quantity) {
     return VNDCurrencyFormatter.formatToVND((parseFloat(price) * parseInt(quantity)).toFixed(3))
 }
-function minusOrPlusQuantity(e) {
+async function minusOrPlusQuantity(e) {
     const id = e.target.id.split(' ')
-    const cosmeticId = state.cartItems[id[0]].cosmetic.COSMETIC_ID
-    const currentQuantity = state.cartItems[id[0]].quantity
+    const cosmeticId = state.cartItems.listCartItem[id[0]].cosmetic.COSMETIC_ID
+    const currentQuantity = state.cartItems.listCartItem[id[0]].quantity
     loading.value = true
     switch (id[1]) {
         case 'btn-plus':
-            CartAPI.updateCartItem(cosmeticId, 1).then(
-                CartAPI.getCartItem().then(async res => {
-                    state.cartItems = res.data
-                    // access after change
-                    setTimeout(() => loading.value = false, 2000)
-                })
-            )
+            await CartAPI.updateCartItem(cosmeticId, 1)
+            // then not working ???
+            CartAPI.getCartItem().then(res => {
+                state.cartItems = res.data
+                loading.value = false
+                // access after change
+                // setTimeout(() => loading.value = false, 2000)
+            })
             break
         default:
-            CartAPI.updateCartItem(cosmeticId, -1).then(
-                CartAPI.getCartItem().then(async res => {
-                    state.cartItems = res.data
-                    setTimeout(() => loading.value = false, 2000)
-                })
-            )
+            await CartAPI.updateCartItem(cosmeticId, -1)
+            CartAPI.getCartItem().then(res => {
+                state.cartItems = res.data
+                loading.value = false
+                // setTimeout(() => loading.value = false, 2000)
+            })
             break
     }
 }
+const getCartItem = computed(() => {
+    return state.cartItems.listCartItem
+})
+const getKey = computed(() => {
+    return state.cartItems.key
+})
+const getSumAll = computed(() => {
+    let sum = 0
+    if (state.cartItems.listCartItem) {
+        state.cartItems.listCartItem.forEach(cartItem => {
+        const price = cartItem.discount ? cartItem.discount.priceAfterDiscount : cartItem.cosmetic.PRICE
+        sum += parseFloat(price) * parseInt(cartItem.quantity)
+    })
+    }
+
+    return VNDCurrencyFormatter.formatToVND(sum)
+})
 onMounted(() => {
     CartAPI.getCartItem().then(async res => {
         state.cartItems = res.data
@@ -53,7 +71,7 @@ onMounted(() => {
 })
 </script>
 <template>
-    <div class='cart-container' v-if="!loading">
+    <div class='cart-container' v-if="!loading" :key="getKey">
         <div class='left-cart'>
             <table class='cart-table'>
                 <thead>
@@ -65,7 +83,7 @@ onMounted(() => {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(cartItem, index) in state.cartItems">
+                    <tr v-for="(cartItem, index) in getCartItem">
                         <td width="50%">
                             <div class='product'>
                                 <img alt='img' :src="cartItem.cosmetic.IMAGE.IMAGE_URL" />
@@ -73,7 +91,7 @@ onMounted(() => {
                             </div>
                         </td>
                         <td>
-                            <div class="price">
+                            <div class="price" v-if="cartItem.discount">
                                 <div class="price-after-sale">
                                     {{ VNDCurrencyFormatter.formatToVND(cartItem.discount.priceAfterDiscount) }}
                                 </div>
@@ -87,6 +105,9 @@ onMounted(() => {
                                     </label>
                                 </div>
                             </div>
+                            <div class="price-not-sale" v-else>
+                                {{ VNDCurrencyFormatter.formatToVND(cartItem.cosmetic.PRICE) }}
+                            </div>
                         </td>
                         <td>
                             <div class='quantity'>
@@ -96,7 +117,12 @@ onMounted(() => {
                             </div>
                         </td>
                         <td width="15%" class="thanhtien">
-                            {{ getSumprice(cartItem.discount.priceAfterDiscount, cartItem.quantity) }}
+                            <span v-if="cartItem.discount">
+                                {{ getSumprice(cartItem.discount.priceAfterDiscount, cartItem.quantity) }}
+                            </span>
+                            <span v-else>
+                                {{ getSumprice(cartItem.cosmetic.PRICE, cartItem.quantity) }}
+                            </span>
                         </td>
                     </tr>
                 </tbody>
@@ -107,9 +133,6 @@ onMounted(() => {
                                 <div class="go-back" onClick={goBack}>
                                     <i class="bi bi-arrow-left"></i>
                                     Tiếp tục mua hàng
-                                </div>
-                                <div class="update">
-                                    <button>Cập nhật</button>
                                 </div>
                             </div>
                         </td>
@@ -124,20 +147,109 @@ onMounted(() => {
                     <div class='row'>
                         <div class='row-title'>Tạm tính: </div>
                         <div class='row-content temp-price'>
-
+                            {{ getSumAll }}
                         </div>
                     </div>
                     <div class='row'>
                         <div class='row-title'>Tổng tiền: </div>
                         <div class='row-content sum-price'>
-
+                            {{ getSumAll }}
                         </div>
                     </div>
                 </div>
             </div>
             <button class='btn-pay' id="payment" onClick={handlePay}>Thanh toán</button>
         </div>
+    </div>
+    <div class='cart-container' v-else>
+        <div class='left-cart'>
+            <table class='cart-table'>
+                <thead>
+                    <tr class='head'>
+                        <td width="50%">Sản phẩm</td>
+                        <td width="15%">Đơn giá</td>
+                        <td width="10%">Số lượng</td>
+                        <td width="15%" class="thanhtien">Thành tiền</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(cartItem, index) in getCartItem">
+                        <td width="50%">
+                            <div class='product'>
+                                <img alt='img' :src="cartItem.cosmetic.IMAGE.IMAGE_URL" />
+                                {{ cartItem.cosmetic.COSMETIC_NAME }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="price" v-if="cartItem.discount">
+                                <div class="price-after-sale">
+                                    {{ VNDCurrencyFormatter.formatToVND(cartItem.discount.priceAfterDiscount) }}
+                                </div>
+                                <div class='price-sale'>
+                                    <label class='real-price'>
+                                        {{ VNDCurrencyFormatter.formatToVND(cartItem.cosmetic.PRICE) }}
+                                    </label>
+                                    &nbsp;|&nbsp;
+                                    <label class='percent-discount'>
+                                        {{ getPercent(cartItem.discount.price, cartItem.discount.priceAfterDiscount) }}
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="price-not-sale" v-else>
+                                {{ VNDCurrencyFormatter.formatToVND(cartItem.cosmetic.PRICE) }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class='quantity'>
+                                <button disabled>-</button>
+                                <input class='input-quantity' :value="cartItem.quantity" />
+                                <button disabled>+</button>
+                            </div>
+                        </td>
+                        <td width="15%" class="thanhtien">
+                            <span v-if="cartItem.discount">
+                                {{ getSumprice(cartItem.discount.priceAfterDiscount, cartItem.quantity) }}
+                            </span>
+                            <span v-else>
+                                {{ getSumprice(cartItem.cosmetic.PRICE, cartItem.quantity) }}
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="8">
+                            <div class="foot">
+                                <div class="go-back">
+                                    <i class="bi bi-arrow-left"></i>
+                                    Tiếp tục mua hàng
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div class='right-cart-container'>
+            <div class='right-cart'>
 
+                <div class='content'>
+                    <div class='row'>
+                        <div class='row-title'>Tạm tính: </div>
+                        <div class='row-content temp-price'>
+                            {{ getSumAll }}
+                        </div>
+                    </div>
+                    <div class='row'>
+                        <div class='row-title'>Tổng tiền: </div>
+                        <div class='row-content sum-price'>
+                            {{ getSumAll }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class='btn-pay' id="payment" onClick={handlePay}>Thanh toán</button>
+        </div>
     </div>
 </template>
 <style scoped>
@@ -247,8 +359,13 @@ onMounted(() => {
     font-size: 15px;
 }
 
+.cart-container .left-cart .cart-table tbody .price-not-sale {
+    font-size: 15px;
+    font-weight: 600;
+}
+
 .cart-container .left-cart .cart-table tbody .price .price-after-sale {
-    font-weight: bold;
+    font-weight: 600;
 }
 
 .cart-container .left-cart .cart-table tbody .product {
@@ -364,7 +481,7 @@ onMounted(() => {
 .cart-container .left-cart .cart-table tfoot .go-back {
     display: flex;
     align-items: center;
-    gap: 30px;
+    gap: 15px;
     cursor: pointer;
     width: fit-content;
 }
