@@ -5,6 +5,9 @@ import { onMounted } from 'vue'
 import VNDCurrencyFormatter from '../util/VNDCurrencyFormatter'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import CartAPI from '../api/CartAPI/CartAPI'
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
+
 const route = useRoute()
 const sort = ref(1)
 const page = ref(1)
@@ -27,7 +30,11 @@ async function minusOrPlusQuantity(e) {
     loading.value = true
     switch (id[1]) {
         case 'btn-plus':
-            await CartAPI.updateCartItem(cosmeticId, 1)
+            await CartAPI.addCartItem(cosmeticId, 1).catch(err => {
+                toast.error(err.response.data, { theme: 'colored' })
+                loading.value = false
+                return
+            })
             // then not working ???
             CartAPI.getCartItem().then(res => {
                 state.cartItems = res.data
@@ -37,7 +44,16 @@ async function minusOrPlusQuantity(e) {
             })
             break
         default:
-            await CartAPI.updateCartItem(cosmeticId, -1)
+            if (currentQuantity === 1) {
+                loading.value = false
+                return
+            }
+            await CartAPI.addCartItem(cosmeticId, -1)
+                .catch(err => {
+                    toast.error(err.response.data, { theme: 'colored' })
+                    loading.value = false
+                    return
+                })
             CartAPI.getCartItem().then(res => {
                 state.cartItems = res.data
                 loading.value = false
@@ -56,13 +72,35 @@ const getSumAll = computed(() => {
     let sum = 0
     if (state.cartItems.listCartItem) {
         state.cartItems.listCartItem.forEach(cartItem => {
-        const price = cartItem.discount ? cartItem.discount.priceAfterDiscount : cartItem.cosmetic.PRICE
-        sum += parseFloat(price) * parseInt(cartItem.quantity)
-    })
+            const price = cartItem.discount ? cartItem.discount.priceAfterDiscount : cartItem.cosmetic.PRICE
+            sum += parseFloat(price) * parseInt(cartItem.quantity)
+        })
     }
 
     return VNDCurrencyFormatter.formatToVND(sum)
 })
+async function changeInput(e) {
+    const quantity = e.target.value
+    const inputId = e.target.id.split(' ')
+    const cosmeticId = inputId[0]
+    if (isNaN(quantity) || parseInt(quantity) <= 0) {
+        toast.error("Số lượng không hợp lệ", { theme: 'colored' })
+        return
+    }
+    loading.value = true
+    await CartAPI.updateCartItem(cosmeticId, quantity).catch(
+        (err) => {
+            toast.error(err.response.data, { theme: 'colored' })
+            loading.value = false
+            return
+        }
+    )
+    CartAPI.getCartItem().then(res => {
+        state.cartItems = res.data
+        loading.value = false
+        // setTimeout(() => loading.value = false, 2000)
+    })
+}
 onMounted(() => {
     CartAPI.getCartItem().then(async res => {
         state.cartItems = res.data
@@ -80,6 +118,7 @@ onMounted(() => {
                         <td width="15%">Đơn giá</td>
                         <td width="10%">Số lượng</td>
                         <td width="15%" class="thanhtien">Thành tiền</td>
+                        <td width="2%"></td>
                     </tr>
                 </thead>
                 <tbody>
@@ -112,7 +151,8 @@ onMounted(() => {
                         <td>
                             <div class='quantity'>
                                 <button :id="index + ' btn-minus'" @click="minusOrPlusQuantity">-</button>
-                                <input class='input-quantity' :value="cartItem.quantity" />
+                                <input class='input-quantity' :id="cartItem.cosmetic.COSMETIC_ID + ' input'"
+                                    :value="cartItem.quantity" @change="changeInput" />
                                 <button :id="index + ' btn-plus'" @click="minusOrPlusQuantity">+</button>
                             </div>
                         </td>
@@ -123,6 +163,9 @@ onMounted(() => {
                             <span v-else>
                                 {{ getSumprice(cartItem.cosmetic.PRICE, cartItem.quantity) }}
                             </span>
+                        </td>
+                        <td class="trash">
+                            <i class="bi bi-trash"></i>
                         </td>
                     </tr>
                 </tbody>
@@ -170,6 +213,7 @@ onMounted(() => {
                         <td width="15%">Đơn giá</td>
                         <td width="10%">Số lượng</td>
                         <td width="15%" class="thanhtien">Thành tiền</td>
+                        <td width="2%"></td>
                     </tr>
                 </thead>
                 <tbody>
@@ -201,9 +245,9 @@ onMounted(() => {
                         </td>
                         <td>
                             <div class='quantity'>
-                                <button disabled>-</button>
-                                <input class='input-quantity' :value="cartItem.quantity" />
-                                <button disabled>+</button>
+                                <button :id="index + ' btn-minus'" disabled>-</button>
+                                <input class='input-quantity'/>
+                                <button :id="index + ' btn-plus'" disabled>+</button>
                             </div>
                         </td>
                         <td width="15%" class="thanhtien">
@@ -214,13 +258,16 @@ onMounted(() => {
                                 {{ getSumprice(cartItem.cosmetic.PRICE, cartItem.quantity) }}
                             </span>
                         </td>
+                        <td class="trash">
+                            <i class="bi bi-trash"></i>
+                        </td>
                     </tr>
                 </tbody>
                 <tfoot>
                     <tr>
                         <td colspan="8">
                             <div class="foot">
-                                <div class="go-back">
+                                <div class="go-back" onClick={goBack}>
                                     <i class="bi bi-arrow-left"></i>
                                     Tiếp tục mua hàng
                                 </div>
@@ -487,7 +534,12 @@ onMounted(() => {
 }
 
 .thanhtien {
-    text-align: end;
+    text-align: center;
+}
+
+.trash {
+    cursor: pointer;
+    padding-right: 0!important;
 }
 
 .cart-container .foot {

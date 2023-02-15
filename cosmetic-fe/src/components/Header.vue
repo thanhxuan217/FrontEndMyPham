@@ -1,9 +1,11 @@
 <script>
-import { useUserStore } from '@/store/userStore'
+import { useUserStore } from '../store/userStore'
+import { useCartStore } from '../store/cartStore'
 import { mapState, mapActions } from 'pinia'
 import AuthenticationAPI from '../api/LoginAPI/authenticationAPI';
 import ProductAPI from '../api/ProductAPI/ProductAPI'
 import { RouterLink } from 'vue-router'
+import CartAPI from '../api/CartAPI/CartAPI';
 export default {
     data() {
         return {
@@ -16,8 +18,9 @@ export default {
         }
     },
     methods: {
-        // khai bao action su dung => su dung nhu this
+        // khai bao action su dung => su dung nhu this => use như function
         ...mapActions(useUserStore, ["commitUserInfo"]),
+        ...mapActions(useCartStore, ['commitCartQuantity']),
         handleScrollHeader() {
             if (window.scrollY >= 130 && window.innerWidth > 886) {
                 this.isShowBotHeader = true
@@ -77,9 +80,13 @@ export default {
         }
     },
     computed: {
-        // khai bao state su dung
+        // khai bao state su dung, use as this.userInfo
+        //=> use như state
         ...mapState(useUserStore, {
             userInfo: "userInfo"
+        }),
+        ...mapState(useCartStore, {
+            quantity: "quantity"
         }),
         getUserName() {
             return this.userInfo !== null ? this.userInfo.userName : ""
@@ -95,6 +102,9 @@ export default {
         },
         isPathIncludeyDiscountId() {
             return this.$router.currentRoute.value.fullPath.includes('discountId')
+        },
+        getQuantity() {
+            return this.quantity
         }
     },
     mounted() {
@@ -111,6 +121,10 @@ export default {
             await ProductAPI.getAllCategory()
                 .then(res => {
                     this.categories = res.data
+                })
+            await CartAPI.getCartItem()
+                .then(res => {
+                    this.commitCartQuantity(res.data.listCartItem.length)
                 })
         }
         fetchData()
@@ -231,12 +245,9 @@ export default {
                     </button>
                 </div>
                 <div>
-                    <a class="cart-icon">
-                        <RouterLink class='none-underline' to="/cart">
-                            <i class="bi bi-cart"></i>
-                        </RouterLink>
-
-                    </a>
+                    <RouterLink class='none-underline cart-icon' :data-before="getQuantity" to="/cart">
+                        <i class="bi bi-cart"></i>
+                    </RouterLink>
                 </div>
             </div>
         </div>
@@ -382,7 +393,7 @@ export default {
     position: absolute;
     font-size: 14px;
     align-self: center;
-    margin-top: 4px;
+    margin-top: 1px;
     font-weight: bold;
 }
 

@@ -2,6 +2,11 @@
 import VNDCurrencyFormatter from '../util/VNDCurrencyFormatter'
 import 'vue3-carousel/dist/carousel.css'
 import { Carousel, Slide, Pagination, Navigation } from 'vue3-carousel'
+import CartAPI from '../api/CartAPI/CartAPI'
+import { useCartStore } from '../store/cartStore'
+import { toast } from 'vue3-toastify'
+import 'vue3-toastify/dist/index.css'
+import { mapState, mapActions } from 'pinia'
 export default {
     props: {
         cosmetic: Object
@@ -20,6 +25,7 @@ export default {
         }
     },
     methods: {
+        ...mapActions(useCartStore, ['commitCartQuantity']),
         handleClickOutside(e) {
             const id = e.target.id
             if (id.includes('quick-view')) {
@@ -47,6 +53,44 @@ export default {
         formatToVND(price) {
             return VNDCurrencyFormatter.formatToVND(price)
         },
+        async addProductToCart(e) {
+            const id = e.target.id.split(' ')
+            const cosmeticId = id[0]
+            await CartAPI.addCartItem(cosmeticId, 1)
+                .then(res => {
+                    toast.success("Thêm sản phẩm vào giỏ thành công!", { theme: 'colored' })
+                })
+                .catch(err => {
+                    toast.error(err.response.data, { theme: 'colored' })
+                    return
+                })
+            await CartAPI.getCartItem()
+                .then(res => {
+                    this.commitCartQuantity(res.data.listCartItem.length)
+                })
+        },
+        async updateProductInCart(e) {
+            const id = e.target.id.split(' ')
+            const cosmeticId = id[0]
+            const inputId = cosmeticId + ' input'
+            const input = document.getElementById(inputId)
+            const value = parseInt(input.value)
+            if (isNaN(value) || value <=0) {
+                toast.error("Số lượng không hợp lệ!", { theme: 'colored' })
+            }
+            await CartAPI.addCartItem(cosmeticId, value)
+                .then(res => {
+                    toast.success("Thêm sản phẩm vào giỏ thành công!", { theme: 'colored' })
+                })
+                .catch(err => {
+                    toast.error(err.response.data, { theme: 'colored' })
+                    return
+                })
+            await CartAPI.getCartItem()
+                .then(res => {
+                    this.commitCartQuantity(res.data.listCartItem.length)
+                })
+        }
     },
     computed: {
         getId() {
@@ -80,7 +124,7 @@ export default {
         }
     },
     mounted() {
-        
+
     }
 }
 </script>
@@ -133,10 +177,11 @@ export default {
                     <div class="add-to-cart-group">
                         <div class="group-btn-input">
                             <button class="btn-plus-minus">-</button>
-                            <input value="1" />
+                            <input value="1" :id="cosmetic.COSMETIC_ID + ' input'"/>
                             <button class="btn-plus-minus">+</button>
                         </div>
-                        <button class="add-to-cart-quickview">Thêm vào giỏ</button>
+                        <button :id="cosmetic.COSMETIC_ID + ' btn2'" @click="updateProductInCart"
+                            class="add-to-cart-quickview">Thêm vào giỏ</button>
                     </div>
                     <div class="categories">
                         <div>Thể loại:</div>
@@ -175,7 +220,8 @@ export default {
                 </div>
             </div>
             <div class="box-button-add-to-cart">
-                <button class='button-add-to-cart'>Thêm vào giỏ</button>
+                <button :id="cosmetic.COSMETIC_ID + ' btn1'" class='button-add-to-cart' @click="addProductToCart">Thêm
+                    vào giỏ</button>
             </div>
         </div>
     </div>
@@ -232,9 +278,11 @@ export default {
     justify-content: center;
     align-items: center;
 }
+
 .card-product .quick-view-right .content .product-price {
     font-size: 20px;
 }
+
 .card-product .quick-view-content .diaglog-image .close-btn {
     align-self: flex-end;
     font-weight: 600;
