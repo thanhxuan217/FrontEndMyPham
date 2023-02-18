@@ -7,7 +7,8 @@ import { RouterLink, useRoute, useRouter } from 'vue-router'
 import CartAPI from '../api/CartAPI/CartAPI'
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
-
+import { useCartStore } from '../store/CartStore'
+const cartStore = useCartStore()
 const route = useRoute()
 const sort = ref(1)
 const page = ref(1)
@@ -101,6 +102,22 @@ async function changeInput(e) {
         // setTimeout(() => loading.value = false, 2000)
     })
 }
+async function deleteCartItem(e) {
+    const cosmeticId = e.currentTarget.id.split(' ')[0]
+    loading.value = true
+    await CartAPI.deleteCartItem(cosmeticId)
+        .catch(err => {
+            toast.error(err.response.data, { theme: 'colored' })
+            loading.value = false
+            return
+        })
+    await CartAPI.getCartItem().then(res => {
+        state.cartItems = res.data
+        cartStore.commitCartQuantity(res.data.listCartItem.length)
+        loading.value = false
+        // setTimeout(() => loading.value = false, 2000)
+    })
+}
 onMounted(() => {
     CartAPI.getCartItem().then(async res => {
         state.cartItems = res.data
@@ -165,7 +182,9 @@ onMounted(() => {
                             </span>
                         </td>
                         <td class="trash">
-                            <i class="bi bi-trash"></i>
+                            <div :id="cartItem.cosmetic.COSMETIC_ID + ' delete'" @click="deleteCartItem">
+                                <i class="bi bi-trash"></i>
+                            </div>
                         </td>
                     </tr>
                 </tbody>
@@ -246,7 +265,7 @@ onMounted(() => {
                         <td>
                             <div class='quantity'>
                                 <button :id="index + ' btn-minus'" disabled>-</button>
-                                <input class='input-quantity'/>
+                                <input class='input-quantity' />
                                 <button :id="index + ' btn-plus'" disabled>+</button>
                             </div>
                         </td>
@@ -267,7 +286,7 @@ onMounted(() => {
                     <tr>
                         <td colspan="8">
                             <div class="foot">
-                                <div class="go-back" onClick={goBack}>
+                                <div class="go-back">
                                     <i class="bi bi-arrow-left"></i>
                                     Tiếp tục mua hàng
                                 </div>
@@ -539,7 +558,7 @@ onMounted(() => {
 
 .trash {
     cursor: pointer;
-    padding-right: 0!important;
+    padding-right: 0 !important;
 }
 
 .cart-container .foot {

@@ -84,9 +84,9 @@ code {
 }
 
 .group-select .select {
-  padding: 8px 15px;
+  padding: 10px 15px;
   border-radius: 3px;
-  border: 1px solid rgb(163, 159, 159);
+  border: 1px solid rgb(200, 196, 196);
   width: 300px;
   display: flex;
   outline: none;
@@ -204,3 +204,42 @@ code {
   color: white!important;
 
 }  */
+.my-input {
+  display: flex;
+  gap: 15px;
+  justify-content: flex-start;
+  align-items: center;
+  flex-direction: column;
+  min-width: 265px;
+}
+
+.my-input label {
+  font-size: 15px;
+  display: block;
+  align-self: flex-start;
+  height: auto;
+  width: 265px;
+}
+
+.my-input input {
+  padding: 9px 15px;
+  border-radius: 3px;
+  border: 1px solid rgb(200, 196, 196);
+  font-size: 15px;
+  align-self: flex-start;
+}
+
+.my-input input:focus {
+  border: 1px solid rgb(86, 158, 234);
+  outline: none;
+  box-shadow: 0 0 10px 0 rgb(86, 158, 234);
+}
+
+.my-input .not-valid {
+  outline: red;
+  border: 1px solid red;
+}
+
+.my-input .error {
+  color: red;
+}

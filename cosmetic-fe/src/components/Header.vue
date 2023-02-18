@@ -204,10 +204,10 @@ export default {
                     </li>
                     <li>
                         <span class="menu-title">
-                            <RouterLink id='product all' class='none-underline' to="/products?price=0&price=2000000"
+                            <div id='product all' @click="goToProductPage" class='none-underline' to="/products?price=0&price=2000000"
                                 :class="currentRouteName === '/products?price=0&price=2000000' ? 'current-path' : ''">
                                 Tất cả sản phẩm
-                            </RouterLink>
+                            </div>
                         </span>
                     </li>
                     <li>
