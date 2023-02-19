@@ -35,6 +35,13 @@ export default {
                 this.isShowTopHeader = false
             }
         },
+        logOut() {
+            localStorage.setItem('accessToken', null);
+            localStorage.setItem('refreshToken', null);
+            this.commitUserInfo(null)
+            this.$router.push('/')
+            this.commitCartQuantity(0)
+        },
         goToProductPage(e) {
             const id = e.currentTarget.id.split(' ')
             let discountId = null
@@ -144,6 +151,9 @@ export default {
                         </div>
                         <div class="text">
                             Xin chào, {{ getUserName }}
+                        </div>
+                        <div class="text" @click="logOut">
+                            Đăng xuất
                         </div>
                     </div>
                 </div>

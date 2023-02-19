@@ -8,12 +8,9 @@ export const useCartStore = defineStore('cart', {
         commitCartQuantity(quantity) {
             this.quantity = quantity
         },
-        callAPIToComitQuantity() {
-            CartAPI.getCartItem().then(res => {
-                // this => is false
-                this.quantity = res.data.listCartItem.length
-                console.log(this.quantity)
-            })
+        async callAPIToComitQuantity() {
+            const listCart = await CartAPI.getCartItem()
+            this.quantity = listCart.data.listCartItem.length
         }
     },
 })

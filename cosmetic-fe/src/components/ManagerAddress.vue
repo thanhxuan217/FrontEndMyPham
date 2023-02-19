@@ -4,21 +4,61 @@ import { reactive, watch, nextTick, computed, ref } from 'vue'
 import { onMounted } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import AddAddress from './AddressComponent/AddAddress.vue'
+import EditAddress from './AddressComponent/EditAddress.vue'
 import { useAddressStore } from '../store/AddressStore'
+import AddressAPI from '../api/AddressAPI/AddressAPI'
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
 const route = useRoute()
 const addressStore = useAddressStore()
-
-const state = reactive({
-    products: null,
+const editAddress = ref(null)
+const addresses = ref([])
+const allAddresses = computed(() => {
+    return addressStore.addresses
 })
-
+async function showEditAddress(e) {
+    const id = e.target.id.split(' ')[0]
+    console.log(id)
+    await AddressAPI.getAddressById(id)
+        .then(res => {
+            console.log(res.data)
+            editAddress.value = res.data
+            addressStore.showEdit()
+        })
+}
+async function setDefault(e) {
+    const id = e.target.id.split(' ')[0]
+    await AddressAPI.updateDefault(id)
+        .then(res => {
+            toast.success("Cập nhật thành công!", { theme: 'colored' })
+            addressStore.getAllAddress()
+        })
+        .catch(err => {
+            toast.error(err.response.data, { theme: 'colored' })
+        })
+}
+async function deleteAddress(e) {
+    const id = e.target.id.split(' ')[0]
+    if (confirm("Bạn có chắc chắn") == true) {
+        await AddressAPI.deleteAddress(id)
+            .then(res => {
+                toast.success("Xoá thành công!", { theme: 'colored' })
+                addressStore.getAllAddress()
+            })
+            .catch(err => {
+                toast.error(err.response.data, { theme: 'colored' })
+            })
+    }
+}
 onMounted(() => {
-
+    addressStore.getAllAddress()
 })
 </script>
 <template>
     <div class="change-userinfo-form">
+        <vue-confirm-dialog></vue-confirm-dialog>
         <AddAddress v-show="addressStore.isShow" />
+        <EditAddress v-if="addressStore.showEditAddress" :address="editAddress" />
         <div class='change-userinfo-form-right-container all-address'>
             <label>
 
@@ -28,30 +68,31 @@ onMounted(() => {
                 <button class='add-address' @click="addressStore.showAddAddress">Thêm địa chỉ</button>
             </div>
             <div class='content'>
-                <div class='address-container'>
+                <div class='address-container' v-for="address in allAddresses">
                     <div class='address-container-content'>
                         <div class='top-address'>
-                            <div class='userName'>Huỳnh Thanh Xuân&nbsp;
+                            <div class='userName'>{{ address.CLIENT_NAME }}&nbsp;
                                 <label class='phone'>|</label>
                                 &nbsp;
                             </div>
-                            <div class='phone'>Test</div>
+                            <div class='phone'>{{ address.PHONE }}</div>
                         </div>
                         <div class='bot-address'>
-                            <div class='address-detail'></div>
-                            <div class='isDefault'>Mặc định</div>
+                            <div class='address-detail'>{{ address.ADDRESS_DETAIL }}</div>
+                            <div class='isDefault' v-if="address.IS_DEFAULT">Mặc định</div>
                         </div>
                     </div>
                     <div class='group-btn'>
                         <div class='btn'>
-                            <div class='edit'>
+                            <div class='edit' @click="showEditAddress" :id="address.ADDRESS_ID + ' edit'">
                                 Chỉnh sửa
                             </div>
-                            <div class='edit'>
+                            <div class='edit' :id="address.ADDRESS_ID + ' delete'" @click="deleteAddress" v-if="!address.IS_DEFAULT">
                                 Xoá
                             </div>
                         </div>
-                        <button class='setDefault'>
+                        <button class='setDefault' :disabled="address.IS_DEFAULT" :id="address.ADDRESS_ID + ' default'"
+                            @click="setDefault">
                             Thiết lập mặc định
                         </button>
                     </div>

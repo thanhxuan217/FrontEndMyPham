@@ -322,7 +322,6 @@ onMounted(() => {
 .cart-container {
     display: flex;
     flex-direction: row;
-    min-height: 500px;
     padding: 30px 30px;
     gap: 15px;
     font-size: 15px;
@@ -332,7 +331,7 @@ onMounted(() => {
     display: flex;
     padding: 20px 25px;
     flex-direction: column;
-    box-shadow: 0 0 35px 0 rgb(193, 191, 191);
+    box-shadow: 0 0 35px 0 rgba(203, 198, 198, 0.902);
     border-radius: 10px;
     height: fit-content;
     flex-grow: 2;
@@ -350,7 +349,7 @@ onMounted(() => {
     font-size: 15px;
     padding: 20px 25px;
     flex-direction: column;
-    box-shadow: 0 0 35px 0 rgb(193, 191, 191);
+    box-shadow: 0 0 35px 0 rgba(203, 198, 198, 0.902);
     border-radius: 10px;
     height: fit-content;
     width: 310px;

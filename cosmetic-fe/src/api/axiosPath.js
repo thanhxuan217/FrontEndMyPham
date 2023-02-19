@@ -5,7 +5,6 @@ class axiosPath {
         return axios.create({
             baseURL: "http://localhost:8080",
             headers: { 'Authorization': 'Bearer ' + access_token }
-
         })
     }
     static default = () => {

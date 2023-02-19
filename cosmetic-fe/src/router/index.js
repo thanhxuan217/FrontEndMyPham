@@ -4,6 +4,7 @@ import ProductsView from '../views/ProductsView.vue'
 import SearchView from '../views/SearchView.vue'
 import CartView from '../views/CartView.vue'
 import ManagerUserView from '../views/ManageUserView.vue'
+import PaymentView from '../views/PaymentView.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -37,9 +38,14 @@ const router = createRouter({
       component: CartView
     },
     {
-      path: '/user',
-      name: 'user',
+      path: '/address',
+      name: 'address',
       component: ManagerUserView
+    },
+    {
+      path: '/payment',
+      name: 'payment',
+      component: PaymentView
     }
   ]
 })

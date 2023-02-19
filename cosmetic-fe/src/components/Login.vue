@@ -2,6 +2,7 @@
 import AuthenticationAPI from '../api/LoginAPI/authenticationAPI';
 import { useUserStore } from '@/store/userStore'
 import { mapState, mapActions } from 'pinia'
+import { useCartStore } from '../store/cartStore'
 export default {
     data() {
         return {
@@ -12,6 +13,7 @@ export default {
     methods: {
         // gives access to this.commitUserInfo and this.toggleLogged
         ...mapActions(useUserStore, ["commitUserInfo"]),
+        ...mapActions(useCartStore, ['commitCartQuantity','callAPIToComitQuantity']),
         login() {
             AuthenticationAPI.login(this.userName, this.password)
                 .then(async res => {
@@ -20,6 +22,7 @@ export default {
                     await AuthenticationAPI.getUser()
                         .then(res => {
                             this.commitUserInfo(res.data)
+                            this.callAPIToComitQuantity()
                         })
                         .catch(err => {
                             this.commitUserInfo(null)
@@ -45,7 +48,7 @@ export default {
         }
     },
     mounted() {
-        console.log(`The initial count is ${this.count}.`)
+        
     }
 }
 </script>
