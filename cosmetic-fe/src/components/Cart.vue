@@ -132,9 +132,9 @@ onMounted(() => {
                 <thead>
                     <tr class='head'>
                         <td width="50%">Sản phẩm</td>
-                        <td width="15%">Đơn giá</td>
-                        <td width="10%">Số lượng</td>
-                        <td width="15%" class="thanhtien">Thành tiền</td>
+                        <td width="15%" class="sub">Đơn giá</td>
+                        <td width="10%" class="sub">Số lượng</td>
+                        <td width="15%" class="thanhtien sub">Thành tiền</td>
                         <td width="2%"></td>
                     </tr>
                 </thead>
@@ -319,6 +319,9 @@ onMounted(() => {
     </div>
 </template>
 <style scoped>
+.sub {
+    color: #888;
+}
 .cart-container {
     display: flex;
     flex-direction: row;
@@ -365,7 +368,6 @@ onMounted(() => {
 }
 
 .cart-container .left-cart .cart-table .head td {
-    font-weight: bold;
     border-bottom: solid 3px rgb(237, 233, 233);
     padding-bottom: 10px;
     padding-top: 10px;

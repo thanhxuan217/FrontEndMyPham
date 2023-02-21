@@ -1,26 +1,27 @@
 import axios from "axios"
 export default class ShipPriceAPI {
     static async getShipPrice(address, cartItems) {
+        console.log(address)
         const axiosPath = axios.create({
             baseURL: "https://online-gateway.ghn.vn/shiip/public-api/master-data",
             headers: {
                 'Content-Type': 'application/json',
                 'Token': 'fc8914d0-4b0b-11ed-8008-c673db1cbf27'
             }
-        });
+        })
         const allProvince = await axiosPath.get('/province');
-        const provinceInCurrentAddress = allProvince.data.data.find(province => province.ProvinceName === address.village.district.province.provinceName)
+        const provinceInCurrentAddress = allProvince.data.data.find(province => province.ProvinceName === address.VILLAGE.DISTRICT.PROVINCE.PROVINCE_NAME)
         const provinceId = provinceInCurrentAddress.ProvinceID;
 
         const province = {
             province_id: provinceId
         }
         const allDistrictInCurrentAddress = await axiosPath.get('/district', province);
-        const districtInCurrentAddress = allDistrictInCurrentAddress.data.data.find(element => element.DistrictName === address.village.district.districtName);
+        const districtInCurrentAddress = allDistrictInCurrentAddress.data.data.find(element => element.DistrictName === address.VILLAGE.DISTRICT.DISTRICT_NAME);
 
         const districtId = districtInCurrentAddress.DistrictID;
         const allVillageInCurrentAddress = await axiosPath.get('/ward?district_id=' + districtId);
-        const villageInCurrentAddress = allVillageInCurrentAddress.data.data.find(element => element.WardName === address.village.villageName);
+        const villageInCurrentAddress = allVillageInCurrentAddress.data.data.find(element => element.WardName === address.VILLAGE.VILLAGE_NAME);
         const villageId = villageInCurrentAddress.WardCode;
         //province_id=220 => can tho
         // district id = 1572 => ninhkieu
@@ -37,11 +38,11 @@ export default class ShipPriceAPI {
         });
 
         let sumQuantity = 0;
-        cartItems.listCartItem.map(cartItem => {
-            sumQuantity += Number(cartItem.quantity);
-        })
+        // cartItems.listCartItem.map(cartItem => {
+        //     sumQuantity += Number(cartItem.quantity);
+        // })
         // 1 kien hang tin la 2 doi
-        const boxNumber = sumQuantity / 2;
+        let boxNumber = sumQuantity / 2;
         if (boxNumber == 0) {
             boxNumber = 1;
         }

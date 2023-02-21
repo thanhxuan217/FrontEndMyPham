@@ -6,31 +6,70 @@ import { reactive, watch, nextTick, computed, ref } from 'vue'
 import { onMounted } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import AddressAPI from '../api/AddressAPI/AddressAPI'
+import ShipPriceAPI from '../api/ShipPriceAPI/ShipPriceAPI'
+import CartAPI from '../api/CartAPI/CartAPI'
+import VNDCurrencyFormatter from '../util/VNDCurrencyFormatter'
+import ChangeAddress from '../components/PaymentComponent/ChangeAddress.vue'
 const route = useRoute()
-const sort = ref(1)
-const page = ref(1)
+const loading = ref(true)
 const state = reactive({
     addresses: [],
     currentAddress: null,
     currentService: null,
     currentPaymentMethod: 'cash',
-    shipPriceDetail: 0
+    shipPriceDetail: null
 })
-
+const cartItems = ref([])
 onMounted(() => {
     AddressAPI.getAllAddress()
-        .then(res => {
+        .then(async res => {
             state.addresses = res.data
             if (res.data.length !== 0) {
                 const defaultAddress = res.data.find(address => address.IS_DEFAULT);
                 state.currentAddress = defaultAddress
-                console.log(defaultAddress)
+                state.shipPriceDetail = await ShipPriceAPI.getShipPrice(defaultAddress, null)
+                console.log(state.shipPriceDetail)
+                state.currentService = state.shipPriceDetail[0]
+                loading.value = false
             }
         })
+    CartAPI.getCartItem()
+        .then(res => {
+            console.log(res.data)
+            cartItems.value = res.data.listCartItem
+        })
+})
+function getPercent(price, priceAfterDiscount) {
+    const percent = ((parseFloat(price) - parseFloat(priceAfterDiscount || 0)) / parseFloat(price)).toFixed(3)
+    return '- ' + percent * 100 + '%'
+}
+function getSumprice(price, quantity) {
+    return VNDCurrencyFormatter.formatToVND((parseFloat(price) * parseInt(quantity)).toFixed(3))
+}
+const getSumAll = computed(() => {
+    let sum = 0
+    if (cartItems) {
+        cartItems.value.forEach(cartItem => {
+            const price = cartItem.discount ? cartItem.discount.priceAfterDiscount : cartItem.cosmetic.PRICE
+            sum += parseFloat(price) * parseInt(cartItem.quantity)
+        })
+    }
+    return VNDCurrencyFormatter.formatToVND(sum)
+})
+const getTotal = computed(() => {
+    let sum = 0
+    if (cartItems) {
+        cartItems.value.forEach(cartItem => {
+            const price = cartItem.discount ? cartItem.discount.priceAfterDiscount : cartItem.cosmetic.PRICE
+            sum += parseFloat(price) * parseInt(cartItem.quantity)
+        })
+    }
+    return VNDCurrencyFormatter.formatToVND(sum + parseFloat(state.currentService.feeShip.total))
 })
 </script>
 <template>
-    <div class='container'>
+    <div class='container' v-if="!loading">
+        <ChangeAddress :addresses="state.addresses" :currentAddress="state.currentAddress" />
         <div class='container-title'>
             Thanh toán
         </div>
@@ -38,24 +77,23 @@ onMounted(() => {
             <div class='payment-header form-container my-custom-form'>
                 <div class='title my-custom-form'>
                     <div>
-                        
+
                     </div>
-                    <div> Địa chỉ: </div>
+                    <div> Địa chỉ nhận hàng </div>
                 </div>
                 <div class='content'>
                     <div class='address-select'>
                         <div class='address-detail'>
                             <div class='userName'>
                                 <b>
-
-                                    &nbsp;|&nbsp;
+                                    {{ state.currentAddress.CLIENT_NAME }}
+                                    &nbsp;|&nbsp;{{ state.currentAddress.PHONE }}
                                 </b>
                             </div>
                             <div class='address'>
-
+                                {{ state.currentAddress.ADDRESS_DETAIL }}
                             </div>
-
-                            <div class='default-address'>
+                            <div class='default-address' v-if="state.currentAddress.IS_DEFAULT">
                                 Mặc định
                             </div>
 
@@ -69,7 +107,7 @@ onMounted(() => {
             </div>
             <div class='payment-product form-container my-custom-form'>
                 <div class='title my-custom-form'>
-                    Sản phẩm
+                    Sản phẩm đã đặt
                 </div>
                 <div class='content'>
                     <div class='product'>
@@ -79,41 +117,54 @@ onMounted(() => {
                                     <td>
                                         Sản phẩm
                                     </td>
-                                    <td class='price'>
+                                    <td class='price sub'>
                                         Đơn giá
                                     </td>
-                                    <td class='quantity'>
+                                    <td class='quantity sub'>
                                         Số lượng
                                     </td>
-                                    <td class='sum'>
+                                    <td class='sum sub'>
                                         Thành tiền
                                     </td>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
+                                <tr v-for="cartItem in cartItems">
                                     <td class='product-img'>
-                                        <img alt='img' />
-                                        <div></div>
+                                        <img alt='img' :src="cartItem.cosmetic.IMAGE.IMAGE_URL" />
+                                        <div>{{ cartItem.cosmetic.COSMETIC_NAME }}</div>
                                     </td>
-                                    <td class='price'>
-
-                                        <div class='price-sale'>
-                                            <label class='real-price'>
-
-                                            </label>
-                                            &nbsp;|&nbsp;
-                                            <label class='percent-discount'>
-
-                                            </label>
+                                    <td>
+                                        <div class="price" v-if="cartItem.discount">
+                                            <div class="price-after-sale">
+                                                {{ VNDCurrencyFormatter.formatToVND(cartItem.discount.priceAfterDiscount) }}
+                                            </div>
+                                            <div class='price-sale'>
+                                                <label class='real-price'>
+                                                    {{ VNDCurrencyFormatter.formatToVND(cartItem.cosmetic.PRICE) }}
+                                                </label>
+                                                &nbsp;|&nbsp;
+                                                <label class='percent-discount'>
+                                                    {{ getPercent(cartItem.discount.price,
+                                                        cartItem.discount.priceAfterDiscount) }}
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="price-not-sale" v-else>
+                                            {{ VNDCurrencyFormatter.formatToVND(cartItem.cosmetic.PRICE) }}
                                         </div>
 
                                     </td>
                                     <td class='quantity'>
-
+                                        {{ cartItem.quantity }}
                                     </td>
                                     <td class='sum'>
-
+                                        <span v-if="cartItem.discount">
+                                            {{ getSumprice(cartItem.discount.priceAfterDiscount, cartItem.quantity) }}
+                                        </span>
+                                        <span v-else>
+                                            {{ getSumprice(cartItem.cosmetic.PRICE, cartItem.quantity) }}
+                                        </span>
                                     </td>
                                 </tr>
                             </tbody>
@@ -124,7 +175,7 @@ onMounted(() => {
             <div class='ship-method form-container my-custom-form'>
                 <div class='title'>
                     <div>
-                        
+
                     </div>
                     <div>Phương thức vận chuyển</div>
                 </div>
@@ -132,12 +183,12 @@ onMounted(() => {
                     <div class='services'>
                         <div class='services-detail'>
                             <div>
-                                Phương thức vận chuyển: &nbsp;
+                                Phương thức vận chuyển: &nbsp; {{ state.currentService.service.short_name }}
                             </div>
                             <div>
                                 Phí vận chuyển: &nbsp;
                                 <label>
-
+                                    {{ VNDCurrencyFormatter.formatToVND(state.currentService.feeShip.total) }}
                                 </label>
                             </div>
                         </div>
@@ -145,10 +196,7 @@ onMounted(() => {
                             Thay đổi
                         </div>
                     </div>
-
-
                 </div>
-
             </div>
             <div class='sum-price form-container my-custom-form'>
                 <div class='title'>
@@ -157,13 +205,15 @@ onMounted(() => {
                 <div class='content'>
                     <div>
                         Tổng tiền hàng: &nbsp;
-
+                        {{ getSumAll }}
                     </div>
                     <div>Phí vận chuyển : &nbsp;
-
+                        {{ VNDCurrencyFormatter.formatToVND(state.currentService.feeShip.total) }}
                     </div>
                     <div>Tổng tiền: &nbsp;
-
+                        <span class="total">
+                            {{ getTotal }}
+                        </span>
                     </div>
                 </div>
             </div>
@@ -173,24 +223,26 @@ onMounted(() => {
                 </div>
                 <div class='content'>
                     <div class='payment-option'>
-                        <div class='payment-method' onClick={handleChangePaymentMethod} id='cash-method'>
+                        <div class='payment-method' id='cash-method'
+                            :class="{ active: state.currentPaymentMethod === 'cash' }">
                             <div class='method-title'>
                                 Tiền mặt
                             </div>
                             <div class="method-icon">
-                                <HiOutlineCash />
+                                <i class="bi bi-cash"></i>
                             </div>
                         </div>
-                        <div class='paypal' onClick={handleChangePaymentMethod} id='paypal-method'>
+                        <div class='payment-method' id='paypal-method'
+                            :class="{ active: state.currentPaymentMethod === 'paypal' }">
                             <div class='method-title'>
                                 Paypal
                             </div>
                             <div class="method-icon">
-                                <FaPaypal />
+                                <i class="bi bi-paypal"></i>
                             </div>
                         </div>
                     </div>
-                    <div class='cash-payment-group'>
+                    <div class='cash-payment-group' v-if="state.currentPaymentMethod === 'cash'">
                         <div>
                             <p>
                                 <b>Thanh toán khi nhận hàng: </b>
@@ -198,9 +250,9 @@ onMounted(() => {
                                 Phí thu hộ: 0 VNĐ
                             </p>
                         </div>
-                        <button class='save pay' onClick={handleCashPay}>Đặt hàng</button>
+                        <button class='save pay'>Đặt hàng</button>
                     </div>
-                    <div class="payment-withpaypal">
+                    <div class="payment-withpaypal" v-else>
                         <div>
                             <b>Thanh toán trực tiếp bằng paypal:</b>
                         </div>
@@ -211,15 +263,15 @@ onMounted(() => {
     </div>
 </template>
 <style scoped>
-
 .payment {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     gap: 20px;
     border-radius: 3px;
-    border: solid 1px rgba(231, 224, 224, 0.902)!important;
-    box-shadow: 0 0 35px 0 rgba(203, 198, 198, 0.902)}
+    border: solid 1px rgba(231, 224, 224, 0.902) !important;
+    box-shadow: 0 0 35px 0 rgba(203, 198, 198, 0.902)
+}
 
 .payment .payment-product .product .product-img img {
     width: 100px;
@@ -231,18 +283,23 @@ onMounted(() => {
     flex-direction: column;
     gap: 15px;
 }
+
 .my-custom-form {
-    box-shadow: none!important;
+    box-shadow: none !important;
     border-top: none;
     border-left: none;
     border-right: none;
     border-radius: 0px;
-    border-bottom: solid 1px rgba(223, 215, 215, 0.884)!important;
+    border-bottom: solid 1px rgba(223, 215, 215, 0.884) !important;
 }
 
 .payment .payment-product .content .product table {
     width: 100%;
     border-collapse: collapse;
+}
+
+.sub {
+    color: #888;
 }
 
 .payment .payment-product .content .product table .product-img {
@@ -252,12 +309,14 @@ onMounted(() => {
     text-align: left;
 }
 
-.payment .payment-product .content .product table td {
-    text-align: center;
-}
+.payment .payment-product .content .product table td {}
 
 .payment .payment-product .content .product table .sum {
     text-align: end;
+}
+
+.payment .payment-product .content .product table .quantity {
+    text-align: center;
 }
 
 .payment .payment-product .content .product table tr {
@@ -287,10 +346,10 @@ onMounted(() => {
     border: red 1px solid;
     padding: 5px 10px;
     border-radius: 3px;
+    color: red;
 }
 
 .payment thead td {
-    font-weight: 600;
     border-bottom: solid 3px rgb(237, 233, 233);
     padding-bottom: 10px;
     padding-top: 10px;
@@ -308,7 +367,7 @@ onMounted(() => {
     gap: 5px
 }
 
-.detail .userName {
+.address-detail .userName {
     font-weight: 500;
 }
 
@@ -440,5 +499,24 @@ onMounted(() => {
 
 .payment .payment-product .content .product table .price-sale .percent-discount {
     color: red;
+}
+
+tbody .price {
+    font-size: 15px;
+}
+
+tbody .price-not-sale {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+tbody .price .price-after-sale {
+    font-weight: 600;
+}
+
+.sum-price .total {
+    color: red;
+    font-size: 18px;
+    font-weight: 600;
 }
 </style>
