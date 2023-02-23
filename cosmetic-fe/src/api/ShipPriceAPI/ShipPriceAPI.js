@@ -1,7 +1,6 @@
 import axios from "axios"
 export default class ShipPriceAPI {
     static async getShipPrice(address, cartItems) {
-        console.log(address)
         const axiosPath = axios.create({
             baseURL: "https://online-gateway.ghn.vn/shiip/public-api/master-data",
             headers: {

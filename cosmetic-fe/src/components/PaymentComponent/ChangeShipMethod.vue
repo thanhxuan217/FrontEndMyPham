@@ -2,39 +2,29 @@
 import { reactive, watch, nextTick, computed, ref } from 'vue'
 import { onMounted, defineProps } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { useAddressStore } from '../../store/AddressStore';
-import AddressAPI from '../../api/AddressAPI/AddressAPI'
-import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
-import ShipPriceAPI from '../../api/ShipPriceAPI/ShipPriceAPI'
-import { walkIdentifiers } from '@vue/compiler-core';
+import VNDCurrencyFormatter from '../../util/VNDCurrencyFormatter'
 const route = useRoute()
 const props = defineProps({
-    addresses: Array,
-    currentAddress: Object,
+    shipDetail: Array,
+    currentService: Object,
     loading: Boolean
 })
-const currentAddressId = ref(null)
-const emit = defineEmits(['closeChangeAddress', 'changeAddress', 'changeShipDetail'])
-function getAddress(data) {
-    const result = data.ADDRESS_DETAIL + ',  ' + data.VILLAGE.VILLAGE_NAME + ',  ' + data.VILLAGE.DISTRICT.DISTRICT_NAME + ',  ' + data.VILLAGE.DISTRICT.PROVINCE.PROVINCE_NAME;
-    return result;
-}
+
+const currentServiceId = ref(null)
+const emit = defineEmits(['closeChangeShipMethod', 'changeShipMethod'])
+
 onMounted(() => {
-    console.log(props)
-    if (props.currentAddress) {
-        currentAddressId.value = props.currentAddress.ADDRESS_ID
+    if (props.currentService) {
+        currentServiceId.value = props.currentService.service.service_type_id
     }
 })
-function closeChangeAddress() {
+function closeChangeShipMethod() {
     // emit => call function in parent
-    emit('closeChangeAddress')
+    emit('closeChangeShipMethod')
 }
-const getCurrentAddressId = computed(() => {
-    return props.currentAddress.ADDRESS_ID
-})
-watch(currentAddressId, async (newAddressId, oldAddressId) => {
-    emit('changeAddress', newAddressId)
+watch(currentServiceId, async (newServiceId, oldServiceId) => {
+    emit('changeShipMethod', newServiceId)
 })
 </script>
 <template>
@@ -42,32 +32,27 @@ watch(currentAddressId, async (newAddressId, oldAddressId) => {
         <div class="form">
             <div class="title">
                 <div>
-                    Chọn địa chỉ
+                    Chọn phương thức vận chuyển
                 </div>
-                <div class="close" @click="closeChangeAddress">
+                <div class="close" @click="closeChangeShipMethod">
                     x
                 </div>
             </div>
             <div class="content">
-                <div class="row" v-for="address in props.addresses">
+                <div class="row" v-for="service in props.shipDetail">
                     <div className='detail'>
                         <div className='userName'>
-                            {{ address.CLIENT_NAME }}
-                            &nbsp;|&nbsp;
-                            {{ address.PHONE }}
+                            {{ service.service.short_name }}
                         </div>
                         <div className='address'>
-                            {{ getAddress(address) }}
-                        </div>
-                        <div v-if="address.IS_DEFAULT" class="default">
-                            Mặc định
+                            {{ VNDCurrencyFormatter.formatToVND(service.feeShip.total) }}
                         </div>
                     </div>
                     <div className='radio-box'>
                         <input type='radio'
-                            :checked="parseInt(getCurrentAddressId) === parseInt(address.ADDRESS_ID)"
-                            name='radio-address' v-model="currentAddressId" :value="address.ADDRESS_ID"
-                            :disabled="props.loading"
+                            :checked="parseInt(currentServiceId) === parseInt(service.service.service_type_id)"
+                            name='radio-address' v-model="currentServiceId"
+                            :value="service.service.service_type_id"
                         />
                     </div>
                 </div>
@@ -103,30 +88,25 @@ watch(currentAddressId, async (newAddressId, oldAddressId) => {
     width: 500px;
     gap: 20px
 }
-
 .form .content {
     display: flex;
     flex-direction: column;
     gap: 10px
 }
-
 .form .title {
     font-size: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
-
 .row .detail .userName {
     font-weight: bold;
 
 }
-
 .row .detail .default {
     color: red;
 
 }
-
 .form .title .close {
     cursor: pointer;
 }
@@ -236,4 +216,5 @@ watch(currentAddressId, async (newAddressId, oldAddressId) => {
 
 .add-address-content .row .right-column .bot {
     margin-bottom: 15px;
-}</style>
+}
+</style>

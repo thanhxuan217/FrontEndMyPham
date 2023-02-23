@@ -10,6 +10,7 @@ import ShipPriceAPI from '../api/ShipPriceAPI/ShipPriceAPI'
 import CartAPI from '../api/CartAPI/CartAPI'
 import VNDCurrencyFormatter from '../util/VNDCurrencyFormatter'
 import ChangeAddress from '../components/PaymentComponent/ChangeAddress.vue'
+import ChangeShipMethod from './PaymentComponent/ChangeShipMethod.vue'
 const route = useRoute()
 const loading = ref(true)
 const state = reactive({
@@ -17,9 +18,12 @@ const state = reactive({
     currentAddress: null,
     currentService: null,
     currentPaymentMethod: 'cash',
-    shipPriceDetail: null
+    shipPriceDetail: []
 })
+const isOpenAddressEdit = ref(false)
+const isOpenShipMethodEdit = ref(false)
 const cartItems = ref([])
+let isFirstInit = 0
 onMounted(() => {
     AddressAPI.getAllAddress()
         .then(async res => {
@@ -28,14 +32,12 @@ onMounted(() => {
                 const defaultAddress = res.data.find(address => address.IS_DEFAULT);
                 state.currentAddress = defaultAddress
                 state.shipPriceDetail = await ShipPriceAPI.getShipPrice(defaultAddress, null)
-                console.log(state.shipPriceDetail)
                 state.currentService = state.shipPriceDetail[0]
                 loading.value = false
             }
         })
     CartAPI.getCartItem()
         .then(res => {
-            console.log(res.data)
             cartItems.value = res.data.listCartItem
         })
 })
@@ -66,10 +68,46 @@ const getTotal = computed(() => {
     }
     return VNDCurrencyFormatter.formatToVND(sum + parseFloat(state.currentService.feeShip.total))
 })
+
+async function changeCurrentAddress(newAddressId) {
+    if (isFirstInit === 0) {
+        isFirstInit = 1
+        return
+    }
+    if (parseInt(newAddressId) === parseInt(state.currentAddress.ADDRESS_ID)) {
+        return
+    }
+    loading.value = true
+    const newAddress = state.addresses.find(address => parseInt(address.ADDRESS_ID) === parseInt(newAddressId))
+    // current address change => call watch in currentAddressId => loop infinity
+    state.currentAddress = newAddress
+    const shipPriceDetail = await ShipPriceAPI.getShipPrice(newAddress, null)
+    state.currentService = shipPriceDetail[0]
+    loading.value = false
+}
+
+function changeShipMethod(newServiceId) {
+    if (!newServiceId) {
+        return
+    }
+    // not call api => not need to call loading
+    const newService = state.shipPriceDetail.find(method => parseInt(method.service.service_type_id) === parseInt(newServiceId))
+    state.currentService = newService
+}
+// }
+// send loading to child component => if loading => disabled
+const isShowChangeAddressInLoading = computed(() => {
+    return isOpenAddressEdit.value && state.currentAddress !== null && loading.value === true
+})
 </script>
 <template>
     <div class='container' v-if="!loading">
-        <ChangeAddress :addresses="state.addresses" :currentAddress="state.currentAddress" />
+        <ChangeAddress v-if="isOpenAddressEdit" @changeAddress="changeCurrentAddress"
+            @closeChangeAddress="() => isOpenAddressEdit = false" :addresses="state.addresses"
+            :currentAddress="state.currentAddress" />
+        <ChangeShipMethod v-show="isOpenShipMethodEdit" @changeShipMethod="changeShipMethod"
+            @closeChangeShipMethod="() => isOpenShipMethodEdit = false" :shipDetail="state.shipPriceDetail"
+            :currentService="state.currentService" />
         <div class='container-title'>
             Thanh toán
         </div>
@@ -96,11 +134,9 @@ const getTotal = computed(() => {
                             <div class='default-address' v-if="state.currentAddress.IS_DEFAULT">
                                 Mặc định
                             </div>
-
                         </div>
                         <div class='change-address'>
-                            <div onClick={openAddressTooltip}>Thay đổi</div>
-
+                            <div @click="isOpenAddressEdit = true" class="change">Thay đổi</div>
                         </div>
                     </div>
                 </div>
@@ -192,7 +228,7 @@ const getTotal = computed(() => {
                                 </label>
                             </div>
                         </div>
-                        <div>
+                        <div class="change" @click="isOpenShipMethodEdit = true">
                             Thay đổi
                         </div>
                     </div>
@@ -223,7 +259,7 @@ const getTotal = computed(() => {
                 </div>
                 <div class='content'>
                     <div class='payment-option'>
-                        <div class='payment-method' id='cash-method'
+                        <div @click="state.currentPaymentMethod = 'cash'" class='payment-method' id='cash-method'
                             :class="{ active: state.currentPaymentMethod === 'cash' }">
                             <div class='method-title'>
                                 Tiền mặt
@@ -232,7 +268,7 @@ const getTotal = computed(() => {
                                 <i class="bi bi-cash"></i>
                             </div>
                         </div>
-                        <div class='payment-method' id='paypal-method'
+                        <div class='payment-method' @click="state.currentPaymentMethod = 'paypal'" id='paypal-method'
                             :class="{ active: state.currentPaymentMethod === 'paypal' }">
                             <div class='method-title'>
                                 Paypal
@@ -261,8 +297,187 @@ const getTotal = computed(() => {
             </div>
         </div>
     </div>
+    <div class='container' v-if="loading">
+        <ChangeAddress v-if="isShowChangeAddressInLoading" :addresses="state.addresses"
+            :currentAddress="state.currentAddress" :loading="loading" />
+        <div class='container-title'>
+            Thanh toán
+        </div>
+        <div class='payment'>
+            <div class='payment-header form-container my-custom-form'>
+                <div class='title my-custom-form'>
+                    <div>
+
+                    </div>
+                    <div> Địa chỉ nhận hàng </div>
+                </div>
+                <div class='content'>
+                    <div class='address-select'>
+                        <div class='address-detail'>
+                            <div class='userName'>
+                                <b>
+
+                                    &nbsp;|&nbsp;
+                                </b>
+                            </div>
+                            <div class='address'>
+
+                            </div>
+                        </div>
+                        <div class='change-address'>
+                            <div>Thay đổi</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class='payment-product form-container my-custom-form'>
+                <div class='title my-custom-form'>
+                    Sản phẩm đã đặt
+                </div>
+                <div class='content'>
+                    <div class='product'>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <td>
+                                        Sản phẩm
+                                    </td>
+                                    <td class='price sub'>
+                                        Đơn giá
+                                    </td>
+                                    <td class='quantity sub'>
+                                        Số lượng
+                                    </td>
+                                    <td class='sum sub'>
+                                        Thành tiền
+                                    </td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class='product-img'>
+
+                                        <div></div>
+                                    </td>
+                                    <td>
+                                        <div class="price">
+                                            <div class="price-after-sale">
+
+                                            </div>
+                                            <div class='price-sale'>
+                                                <label class='real-price'>
+
+                                                </label>
+                                                &nbsp;|&nbsp;
+                                                <label class='percent-discount'>
+
+                                                </label>
+                                            </div>
+                                        </div>
+
+
+                                    </td>
+                                    <td class='quantity'>
+
+                                    </td>
+                                    <td class='sum'>
+
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class='ship-method form-container my-custom-form'>
+                <div class='title'>
+                    <div>
+
+                    </div>
+                    <div>Phương thức vận chuyển</div>
+                </div>
+                <div class='content'>
+                    <div class='services'>
+                        <div class='services-detail'>
+                            <div>
+                                Phương thức vận chuyển: &nbsp;
+                            </div>
+                            <div>
+                                Phí vận chuyển: &nbsp;
+                                <label>
+
+                                </label>
+                            </div>
+                        </div>
+                        <div class="change">
+                            Thay đổi
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class='sum-price form-container my-custom-form'>
+                <div class='title'>
+                    Chi tiết thanh toán:
+                </div>
+                <div class='content'>
+                    <div>
+                        Tổng tiền hàng: &nbsp;
+
+                    </div>
+                    <div>Phí vận chuyển : &nbsp;
+
+                    </div>
+                    <div>Tổng tiền: &nbsp;
+                        <span class="total">
+
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class='select-payment-option form-container my-custom-form'>
+                <div class='title my-custom-form'>
+                    Phương thức thanh toán:
+                </div>
+                <div class='content'>
+                    <div class='payment-option'>
+                        <div class='payment-method' id='cash-method'>
+                            <div class='method-title'>
+                                Tiền mặt
+                            </div>
+                            <div class="method-icon">
+                                <i class="bi bi-cash"></i>
+                            </div>
+                        </div>
+                        <div class='payment-method' id='paypal-method'>
+                            <div class='method-title'>
+                                Paypal
+                            </div>
+                            <div class="method-icon">
+                                <i class="bi bi-paypal"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='cash-payment-group'>
+                        <div>
+                            <p>
+                                <b>Thanh toán khi nhận hàng: </b>
+                                <br />
+                                Phí thu hộ: 0 VNĐ
+                            </p>
+                        </div>
+                        <button class='save pay'>Đặt hàng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </template>
 <style scoped>
+.change {
+    cursor: pointer;
+    color: blue;
+}
+
 .payment {
     display: flex;
     flex-direction: column;
@@ -328,6 +543,7 @@ const getTotal = computed(() => {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+    min-height: 31.6px;
 }
 
 .payment .payment-header .content .address-select .address-detail {
