@@ -152,6 +152,9 @@ export default {
                         <div class="text">
                             Xin chào, {{ getUserName }}
                         </div>
+                        <RouterLink to='/address' class="none-underline text">
+                            Địa chỉ
+                        </RouterLink>
                         <div class="text" @click="logOut">
                             Đăng xuất
                         </div>
@@ -178,14 +181,12 @@ export default {
                         @mouseleave="isShowCategoriesDropdownMenu = false"
                         @mouseenter="isShowCategoriesDropdownMenu = true">
                         <div class='my-dropdown-item' v-for="category in categories.categories">
-                            <div class="category-title" :id="'category ' + category.CATEGORY_ID"
-                                @click="goToProductPage">
+                            <div class="category-title" :id="'category ' + category.CATEGORY_ID" @click="goToProductPage">
                                 {{ category.CATEGORY_NAME }}
                             </div>
                             <div class="list-item">
                                 <div class='item' v-for="categoryDetail in category.category_details"
-                                    :id="'categoryDetail ' + categoryDetail.CATEGORY_DETAIL_ID"
-                                    @click="goToProductPage">
+                                    :id="'categoryDetail ' + categoryDetail.CATEGORY_DETAIL_ID" @click="goToProductPage">
                                     <a class='none-underline'>
                                         {{ categoryDetail.CATEGORY_DETAIL_NAME }}
                                     </a>
@@ -194,11 +195,9 @@ export default {
                         </div>
                     </div>
                     <div class='my-dropdown-menu discount' v-show="isShowDiscountsDropdownMenu"
-                        @mouseleave="isShowDiscountsDropdownMenu = false"
-                        @mouseenter="isShowDiscountsDropdownMenu = true">
+                        @mouseleave="isShowDiscountsDropdownMenu = false" @mouseenter="isShowDiscountsDropdownMenu = true">
                         <div class='my-dropdown-item' v-for="discount in categories.discounts">
-                            <div class="category-title" :id="'discount ' + discount.DISCOUNT_ID"
-                                @click="goToProductPage">
+                            <div class="category-title" :id="'discount ' + discount.DISCOUNT_ID" @click="goToProductPage">
                                 {{ discount.DISCOUNT_NAME }}
                             </div>
                         </div>
@@ -214,7 +213,8 @@ export default {
                     </li>
                     <li>
                         <span class="menu-title">
-                            <div id='product all' @click="goToProductPage" class='none-underline' to="/products?price=0&price=2000000"
+                            <div id='product all' @click="goToProductPage" class='none-underline'
+                                to="/products?price=0&price=2000000"
                                 :class="currentRouteName === '/products?price=0&price=2000000' ? 'current-path' : ''">
                                 Tất cả sản phẩm
                             </div>

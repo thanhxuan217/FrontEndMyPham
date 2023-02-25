@@ -21,10 +21,7 @@ function getAddress(data) {
     return result;
 }
 onMounted(() => {
-    console.log(props)
-    if (props.currentAddress) {
-        currentAddressId.value = props.currentAddress.ADDRESS_ID
-    }
+    currentAddressId.value = props.currentAddress.ADDRESS_ID
 })
 function closeChangeAddress() {
     // emit => call function in parent
@@ -38,7 +35,7 @@ watch(currentAddressId, async (newAddressId, oldAddressId) => {
 })
 </script>
 <template>
-    <div class="add-address-form">
+    <div class="add-address-form" v-if="!props.loading">
         <div class="form">
             <div class="title">
                 <div>
@@ -64,11 +61,46 @@ watch(currentAddressId, async (newAddressId, oldAddressId) => {
                         </div>
                     </div>
                     <div className='radio-box'>
-                        <input type='radio'
-                            :checked="parseInt(getCurrentAddressId) === parseInt(address.ADDRESS_ID)"
-                            name='radio-address' v-model="currentAddressId" :value="address.ADDRESS_ID"
-                            :disabled="props.loading"
+                        <input 
+                            type='radio' 
+                            :key="address.ADDRESS_ID + 'checkbox'"
+                            name='radio-address' 
+                            v-model="currentAddressId"
+                            :value="address.ADDRESS_ID" 
                         />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="add-address-form" v-else>
+        <div class="form">
+            <div class="title">
+                <div>
+                    Chọn địa chỉ
+                </div>
+                <div class="close" @click="closeChangeAddress">
+                    x
+                </div>
+            </div>
+            <div class="content">
+                <div class="row" v-for="address in props.addresses">
+                    <div className='detail'>
+                        <div className='userName'>
+                            {{ address.CLIENT_NAME }}
+                            &nbsp;|&nbsp;
+                            {{ address.PHONE }}
+                        </div>
+                        <div className='address'>
+                            {{ getAddress(address) }}
+                        </div>
+                        <div v-if="address.IS_DEFAULT" class="default">
+                            Mặc định
+                        </div>
+                    </div>
+                    <div className='radio-box'>
+                        <input type='radio' :checked="parseInt(getCurrentAddressId) === parseInt(address.ADDRESS_ID)"
+                            name='radio-address' :value="address.ADDRESS_ID" :disabled="props.loading" />
                     </div>
                 </div>
             </div>
@@ -236,4 +268,5 @@ watch(currentAddressId, async (newAddressId, oldAddressId) => {
 
 .add-address-content .row .right-column .bot {
     margin-bottom: 15px;
-}</style>
+}
+</style>

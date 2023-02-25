@@ -44,6 +44,9 @@ async function addFilterProduct(e) {
             // check class if active => add, else remove
             if (e.currentTarget.className === 'category-name') {
                 e.currentTarget.className = 'category-name active'
+                if (!state.filters.categoryIds) {
+                    state.filters.categoryIds = []
+                }
                 const newFilter = [...state.filters.categoryIds, id]
                 state.filters.categoryIds = newFilter
             } else {
@@ -57,14 +60,16 @@ async function addFilterProduct(e) {
             if (e.currentTarget.className === 'category-detail') {
                 e.currentTarget.className = 'category-detail active'
                 state.filters.categoryIds = []
+                if (!state.filters.categoryDetailIds) {
+                    state.filters.categoryDetailIds = []
+                }
                 const newFilter = [...state.filters.categoryDetailIds, id]
                 state.filters.categoryDetailIds = newFilter
             } else {
                 e.currentTarget.className = 'category-detail'
-                const arrayFilter = [...state.filters.categoryIds]
+                const arrayFilter = [...state.filters.categoryDetailIds]
                 const newFilter = arrayFilter.filter(categoryDetailId => Number(categoryDetailId) !== Number(id))
                 state.filters.categoryDetailIds = newFilter
-
             }
             break;
         // case 'discount':
@@ -228,13 +233,11 @@ onMounted(() => {
                 <div class="filter-content">
                     <div class="categories" v-for="category in state.categories">
                         <div class="category">
-                            <div class="category-name" :id="category.CATEGORY_ID + ' category'"
-                                @click="addFilterProduct"
+                            <div class="category-name" :id="category.CATEGORY_ID + ' category'" @click="addFilterProduct"
                                 :class="{ active: isThisCategoryInclude(category.CATEGORY_ID) }">
                                 {{ category.CATEGORY_NAME }}
                             </div>
-                            <div class="dropdown-icon" :id="category.CATEGORY_ID + ' arrow'"
-                                @click="toggleDropdownMenu">
+                            <div class="dropdown-icon" :id="category.CATEGORY_ID + ' arrow'" @click="toggleDropdownMenu">
                                 <i class="bi bi-chevron-down"></i>
                             </div>
                         </div>
@@ -267,7 +270,7 @@ onMounted(() => {
                             <span>
                                 {{
                                     VNDCurrencyFormatter.formatToVND(state.filters.price[0]) + ': ' +
-                                        VNDCurrencyFormatter.formatToVND(state.filters.price[1])
+                                    VNDCurrencyFormatter.formatToVND(state.filters.price[1])
                                 }}
                                 &nbsp;
                             </span>
@@ -275,19 +278,19 @@ onMounted(() => {
                     </div>
                 </div>
                 <!-- <div class="filter-title">
-                    Khuyến mãi
-                </div>
-                <div class="diver"></div>
-                <div class="filter-content">
-                    <div class="categories" v-for="discount in state.discounts">
-                        <div class="category">
-                            <div class="category-name" @click="addFilterProduct"
-                                :id="discount.DISCOUNT_ID + ' discount'">
-                                {{ discount.DISCOUNT_NAME }}
+                        Khuyến mãi
+                    </div>
+                    <div class="diver"></div>
+                    <div class="filter-content">
+                        <div class="categories" v-for="discount in state.discounts">
+                            <div class="category">
+                                <div class="category-name" @click="addFilterProduct"
+                                    :id="discount.DISCOUNT_ID + ' discount'">
+                                    {{ discount.DISCOUNT_NAME }}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div> -->
+                    </div> -->
             </div>
             <button class="reset-all-filter" @click="resetFilter">Làm mới lọc</button>
         </div>

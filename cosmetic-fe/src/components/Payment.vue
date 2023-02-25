@@ -11,6 +11,10 @@ import CartAPI from '../api/CartAPI/CartAPI'
 import VNDCurrencyFormatter from '../util/VNDCurrencyFormatter'
 import ChangeAddress from '../components/PaymentComponent/ChangeAddress.vue'
 import ChangeShipMethod from './PaymentComponent/ChangeShipMethod.vue'
+import { loadScript } from "@paypal/paypal-js"
+import PriceUltil from '../util/PriceUtil'
+const paypalBtn = ref(null)
+
 const route = useRoute()
 const loading = ref(true)
 const state = reactive({
@@ -24,22 +28,81 @@ const isOpenAddressEdit = ref(false)
 const isOpenShipMethodEdit = ref(false)
 const cartItems = ref([])
 let isFirstInit = 0
-onMounted(() => {
-    AddressAPI.getAllAddress()
+onMounted(async () => {
+    await CartAPI.getCartItem()
+        .then(res => {
+            cartItems.value = res.data.listCartItem
+        })
+    await AddressAPI.getAllAddress()
         .then(async res => {
+            const cartItems = await CartAPI.getCartItem()
             state.addresses = res.data
             if (res.data.length !== 0) {
                 const defaultAddress = res.data.find(address => address.IS_DEFAULT);
                 state.currentAddress = defaultAddress
-                state.shipPriceDetail = await ShipPriceAPI.getShipPrice(defaultAddress, null)
+                state.shipPriceDetail = await ShipPriceAPI.getShipPrice(defaultAddress, cartItems.data.listCartItem)
                 state.currentService = state.shipPriceDetail[0]
                 loading.value = false
             }
         })
-    CartAPI.getCartItem()
-        .then(res => {
-            cartItems.value = res.data.listCartItem
-        })
+    let paypal
+    try {
+        paypal = await loadScript({
+            'client-id': 'AblowdzjW4qMJOBp7OZNdpHd3GiiFBLnJet_zderciQE9qDsq3_bYfc3SmVPloWY7Rezl1DTP7_lcXZ7',
+        });
+    } catch (error) {
+        console.error('failed to load the PayPal JS SDK script', error);
+    }
+
+    if (paypal) {
+        try {
+            await paypal.Buttons({
+                async createOrder(data, actions) {
+                    let price = PriceUltil.convertToUSD(getTotal._value);
+                    // const getPrice = async () => {
+                    //     await PriceUltil.convertToUSD(Number(getTotal) + Number(state.currentService.feeShip.total))
+                    //         .then(res => {
+                    //             price = res;
+                    //         })
+                    // }
+                    // await getPrice()
+                    return actions.order.create({
+                        purchase_units: [
+                            {
+                                amount: {
+                                    "currency_code": "USD",
+                                    "value": price + '',
+                                },
+                                "reference_id": "AblowdzjW4qMJOBp7OZNdpHd3GiiFBLnJet_zderciQE9qDsq3_bYfc3SmVPloWY7Rezl1DTP7_lcXZ7"
+                            },
+                        ],
+                    });
+                },
+                onApprove(data, actions) {
+                    return actions.order.capture().then((details) => {
+                        const name = details.payer.name.given_name;
+                        // setLoading(true);
+                        // CartAPI.payment({
+                        //     shipPrice: currentService.feeShip.total,
+                        //     addressId: currentAddress.addressId,
+                        //     method: 'paypal'
+                        // })
+                        //     .then(res => {
+                        //         navigate('/', { replace: true });
+                        //         props.setReload()
+                        //     })
+                        //     .catch((err) => {
+                        //         NotificationManager.error("Lỗi")
+                        //     })
+                        console.log(name)
+                    });
+                }
+            }
+            ).render(paypalBtn.value);
+        } catch (error) {
+            console.error('failed to render the PayPal Buttons', error);
+        }
+    }
 })
 function getPercent(price, priceAfterDiscount) {
     const percent = ((parseFloat(price) - parseFloat(priceAfterDiscount || 0)) / parseFloat(price)).toFixed(3)
@@ -66,7 +129,7 @@ const getTotal = computed(() => {
             sum += parseFloat(price) * parseInt(cartItem.quantity)
         })
     }
-    return VNDCurrencyFormatter.formatToVND(sum + parseFloat(state.currentService.feeShip.total))
+    return sum + parseFloat(state.currentService.feeShip.total)
 })
 
 async function changeCurrentAddress(newAddressId) {
@@ -81,7 +144,7 @@ async function changeCurrentAddress(newAddressId) {
     const newAddress = state.addresses.find(address => parseInt(address.ADDRESS_ID) === parseInt(newAddressId))
     // current address change => call watch in currentAddressId => loop infinity
     state.currentAddress = newAddress
-    const shipPriceDetail = await ShipPriceAPI.getShipPrice(newAddress, null)
+    const shipPriceDetail = await ShipPriceAPI.getShipPrice(newAddress, cartItems.value)
     state.currentService = shipPriceDetail[0]
     loading.value = false
 }
@@ -104,7 +167,7 @@ const isShowChangeAddressInLoading = computed(() => {
     <div class='container' v-if="!loading">
         <ChangeAddress v-if="isOpenAddressEdit" @changeAddress="changeCurrentAddress"
             @closeChangeAddress="() => isOpenAddressEdit = false" :addresses="state.addresses"
-            :currentAddress="state.currentAddress" />
+            :currentAddress="state.currentAddress" :key="state.currentAddress.ADDRESS_ID" />
         <ChangeShipMethod v-show="isOpenShipMethodEdit" @changeShipMethod="changeShipMethod"
             @closeChangeShipMethod="() => isOpenShipMethodEdit = false" :shipDetail="state.shipPriceDetail"
             :currentService="state.currentService" />
@@ -248,7 +311,7 @@ const isShowChangeAddressInLoading = computed(() => {
                     </div>
                     <div>Tổng tiền: &nbsp;
                         <span class="total">
-                            {{ getTotal }}
+                            {{ VNDCurrencyFormatter.formatToVND(getTotal) }}
                         </span>
                     </div>
                 </div>
@@ -278,7 +341,7 @@ const isShowChangeAddressInLoading = computed(() => {
                             </div>
                         </div>
                     </div>
-                    <div class='cash-payment-group' v-if="state.currentPaymentMethod === 'cash'">
+                    <div class='cash-payment-group' v-show="state.currentPaymentMethod === 'cash'">
                         <div>
                             <p>
                                 <b>Thanh toán khi nhận hàng: </b>
@@ -288,10 +351,11 @@ const isShowChangeAddressInLoading = computed(() => {
                         </div>
                         <button class='save pay'>Đặt hàng</button>
                     </div>
-                    <div class="payment-withpaypal" v-else>
+                    <div class="payment-withpaypal" v-show="state.currentPaymentMethod !== 'cash'">
                         <div>
                             <b>Thanh toán trực tiếp bằng paypal:</b>
                         </div>
+                        <div ref="paypalBtn"></div>
                     </div>
                 </div>
             </div>

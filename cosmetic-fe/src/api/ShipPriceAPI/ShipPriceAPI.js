@@ -5,7 +5,7 @@ export default class ShipPriceAPI {
             baseURL: "https://online-gateway.ghn.vn/shiip/public-api/master-data",
             headers: {
                 'Content-Type': 'application/json',
-                'Token': 'fc8914d0-4b0b-11ed-8008-c673db1cbf27'
+                'Token': '210d4f5b-b4d4-11ed-9dc6-f64f768dbc22'
             }
         })
         const allProvince = await axiosPath.get('/province');
@@ -26,20 +26,20 @@ export default class ShipPriceAPI {
         // district id = 1572 => ninhkieu
         // 550113=> xuan khanh
         const servicesAvailables = await axios.post('https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/available-services', {
-            "shop_id": 2410823,
+            "shop_id": 3837693,
             "from_district": 1572,
             "to_district": districtId
         }, {
             headers: {
                 'Content-Type': 'application/json',
-                'Token': 'fc8914d0-4b0b-11ed-8008-c673db1cbf27'
+                'Token': '210d4f5b-b4d4-11ed-9dc6-f64f768dbc22'
             }
         });
 
         let sumQuantity = 0;
-        // cartItems.listCartItem.map(cartItem => {
-        //     sumQuantity += Number(cartItem.quantity);
-        // })
+        cartItems.map(cartItem => {
+            sumQuantity += Number(cartItem.quantity);
+        })
         // 1 kien hang tin la 2 doi
         let boxNumber = sumQuantity / 2;
         if (boxNumber == 0) {
@@ -52,22 +52,21 @@ export default class ShipPriceAPI {
                 //await promise all
                 await Promise.all(servicesAvailables.data.data.map(async (servicesAvailable) => {
                     const feeShip = await axios.post('https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee', {
-                        "shop_id": 2410823,
+                        "shop_id": 3837693,
                         "to_district_id": districtId,
                         "to_ward_code": villageId,
                         "service_type_id": servicesAvailable.service_type_id,
-                        "height": 23 * Math.round(boxNumber),
-                        "width": 10,
-                        "length": 23,
-                        "weight": 400 * Math.round(boxNumber)
+                        "height": 15 * Math.round(boxNumber),
+                        "width": 4,
+                        "length": 4,
+                        "weight": 50 * Math.round(boxNumber)
                     }, {
                         headers: {
                             'Content-Type': 'application/json',
-                            'Token': 'fc8914d0-4b0b-11ed-8008-c673db1cbf27',
-                            'ShopId': 2410823
+                            'Token': '210d4f5b-b4d4-11ed-9dc6-f64f768dbc22',
+                            'ShopId': 3837693
                         }
                     })
-
                     const time = await axios.post('https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/leadtime', {
                         "from_district_id": 1572,
                         "from_ward_code": "550113",
@@ -77,11 +76,10 @@ export default class ShipPriceAPI {
                     }, {
                         headers: {
                             'Content-Type': 'application/json',
-                            'Token': 'fc8914d0-4b0b-11ed-8008-c673db1cbf27',
-                            'ShopId': 2410823
+                            'Token': '210d4f5b-b4d4-11ed-9dc6-f64f768dbc22',
+                            'ShopId': 3837693
                         }
                     })
-
                     result.push({
                         feeShip: feeShip.data.data,
                         time: time.data.data,

@@ -204,7 +204,6 @@ onMounted(() => {
         </div>
         <div class='right-cart-container'>
             <div class='right-cart'>
-
                 <div class='content'>
                     <div class='row'>
                         <div class='row-title'>Tạm tính: </div>
@@ -220,7 +219,9 @@ onMounted(() => {
                     </div>
                 </div>
             </div>
-            <button class='btn-pay' id="payment" onClick={handlePay}>Thanh toán</button>
+            <RouterLink to='/payment' class="none-underline btn-pay">
+                Thanh toán
+            </RouterLink>
         </div>
     </div>
     <div class='cart-container' v-else>
@@ -322,6 +323,7 @@ onMounted(() => {
 .sub {
     color: #888;
 }
+
 .cart-container {
     display: flex;
     flex-direction: row;
