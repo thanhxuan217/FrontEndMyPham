@@ -24,8 +24,7 @@ const router = createRouter({
     {
       path: '/products',
       name: 'products',
-      component: ProductsView,
-      props: route => ({ test: route.query.price })
+      component: ProductsView
     },
     {
       path: '/search',

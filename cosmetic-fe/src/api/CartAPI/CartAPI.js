@@ -14,5 +14,8 @@ class CartAPI {
     static async deleteCartItem(cosmeticId) {
         return await axiosPath.authentication().delete('/api/cart/deleteProductInCart/' + cosmeticId)
     }
+    static async payment(data) {
+        return await axiosPath.authentication().post('/api/cart/payment', data)
+    }
 }
 export default CartAPI

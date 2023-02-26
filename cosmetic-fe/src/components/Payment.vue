@@ -13,9 +13,12 @@ import ChangeAddress from '../components/PaymentComponent/ChangeAddress.vue'
 import ChangeShipMethod from './PaymentComponent/ChangeShipMethod.vue'
 import { loadScript } from "@paypal/paypal-js"
 import PriceUltil from '../util/PriceUtil'
+import { toast } from 'vue3-toastify'
+import 'vue3-toastify/dist/index.css'
+import { useCartStore } from '../store/CartStore'
+const cartStore = useCartStore()
+const router = useRouter()
 const paypalBtn = ref(null)
-
-const route = useRoute()
 const loading = ref(true)
 const state = reactive({
     addresses: [],
@@ -82,18 +85,26 @@ onMounted(async () => {
                     return actions.order.capture().then((details) => {
                         const name = details.payer.name.given_name;
                         // setLoading(true);
-                        // CartAPI.payment({
-                        //     shipPrice: currentService.feeShip.total,
-                        //     addressId: currentAddress.addressId,
-                        //     method: 'paypal'
+                        CartAPI.payment({
+                            shipPrice: state.currentService.feeShip.total,
+                            addressId: state.currentAddress.ADDRESS_ID,
+                            method: 'paypal'
+                        })
+                            .then(res => {
+                                toast.success("Thanh toán thành công!", { theme: 'colored' })
+                                cartStore.callAPIToComitQuantity()
+                                router.push('/')
+                            })
+                            .catch(err => {
+                                toast.error("Thanh toán thất bại!", { theme: 'colored' })
+                            })
+                        // .then(res => {
+                        //     navigate('/', { replace: true });
+                        //     props.setReload()
                         // })
-                        //     .then(res => {
-                        //         navigate('/', { replace: true });
-                        //         props.setReload()
-                        //     })
-                        //     .catch((err) => {
-                        //         NotificationManager.error("Lỗi")
-                        //     })
+                        // .catch((err) => {
+                        //     NotificationManager.error("Lỗi")
+                        // })
                         console.log(name)
                     });
                 }
@@ -162,6 +173,21 @@ function changeShipMethod(newServiceId) {
 const isShowChangeAddressInLoading = computed(() => {
     return isOpenAddressEdit.value && state.currentAddress !== null && loading.value === true
 })
+function cashPayment() {
+    CartAPI.payment({
+        shipPrice: state.currentService.feeShip.total,
+        addressId: state.currentAddress.ADDRESS_ID,
+        method: 'cash'
+    })
+        .then(res => {
+            toast.success("Thanh toán thành công!", { theme: 'colored' })
+            cartStore.callAPIToComitQuantity()
+            router.push('/')
+        })
+        .catch(err => {
+            toast.error("Thanh toán thất bại!", { theme: 'colored' })
+        })
+}
 </script>
 <template>
     <div class='container' v-if="!loading">
@@ -349,7 +375,7 @@ const isShowChangeAddressInLoading = computed(() => {
                                 Phí thu hộ: 0 VNĐ
                             </p>
                         </div>
-                        <button class='save pay'>Đặt hàng</button>
+                        <button class='save pay' @click="cashPayment">Đặt hàng</button>
                     </div>
                     <div class="payment-withpaypal" v-show="state.currentPaymentMethod !== 'cash'">
                         <div>

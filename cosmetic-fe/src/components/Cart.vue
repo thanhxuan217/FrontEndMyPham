@@ -5,13 +5,12 @@ import { onMounted } from 'vue'
 import VNDCurrencyFormatter from '../util/VNDCurrencyFormatter'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import CartAPI from '../api/CartAPI/CartAPI'
+import AddressAPI from '../api/AddressAPI/AddressAPI'
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 import { useCartStore } from '../store/CartStore'
+const router = useRouter()
 const cartStore = useCartStore()
-const route = useRoute()
-const sort = ref(1)
-const page = ref(1)
 const loading = ref(true)
 const state = reactive({
     cartItems: [],
@@ -66,9 +65,6 @@ async function minusOrPlusQuantity(e) {
 const getCartItem = computed(() => {
     return state.cartItems.listCartItem
 })
-const getKey = computed(() => {
-    return state.cartItems.key
-})
 const getSumAll = computed(() => {
     let sum = 0
     if (state.cartItems.listCartItem) {
@@ -118,15 +114,36 @@ async function deleteCartItem(e) {
         // setTimeout(() => loading.value = false, 2000)
     })
 }
+async function goToPayment() {
+    // check if has address
+    await AddressAPI.getAllAddress()
+        .then(res => {
+            console.log(res.data)
+            if (res.data.length) {
+                router.push('/payment')
+            } else {
+                router.push('/address')
+            }
+        }).catch(err => {
+            toast.error("Lỗi lấy địa chỉ!", { theme: 'colored' })
+        })
+
+}
 onMounted(() => {
     CartAPI.getCartItem().then(async res => {
         state.cartItems = res.data
         loading.value = false
     })
 })
+const isEmptyCart = computed(() => {
+    if (state.cartItems.listCartItem) {
+        return state.cartItems.listCartItem.length === 0
+    }
+    return true
+})
 </script>
 <template>
-    <div class='cart-container' v-if="!loading" :key="getKey">
+    <div class='cart-container' v-if="!loading">
         <div class='left-cart'>
             <table class='cart-table'>
                 <thead>
@@ -219,9 +236,9 @@ onMounted(() => {
                     </div>
                 </div>
             </div>
-            <RouterLink to='/payment' class="none-underline btn-pay">
+            <button to='/payment' @click="goToPayment" class="btn-pay" :disabled="isEmptyCart">
                 Thanh toán
-            </RouterLink>
+            </button>
         </div>
     </div>
     <div class='cart-container' v-else>
@@ -315,7 +332,7 @@ onMounted(() => {
                     </div>
                 </div>
             </div>
-            <button class='btn-pay' id="payment" onClick={handlePay}>Thanh toán</button>
+            <button class='btn-pay' id="payment" onClick={handlePay} disabled>Thanh toán</button>
         </div>
     </div>
 </template>
@@ -330,6 +347,7 @@ onMounted(() => {
     padding: 30px 30px;
     gap: 15px;
     font-size: 15px;
+    min-height: 700px;
 }
 
 .cart-container .left-cart {
