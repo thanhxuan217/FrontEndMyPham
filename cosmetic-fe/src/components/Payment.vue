@@ -51,7 +51,7 @@ onMounted(async () => {
     let paypal
     try {
         paypal = await loadScript({
-            'client-id': 'AblowdzjW4qMJOBp7OZNdpHd3GiiFBLnJet_zderciQE9qDsq3_bYfc3SmVPloWY7Rezl1DTP7_lcXZ7',
+            'client-id': 'AUBq6Qa0U5fokeiuUwrVych76fQJGgV423fV38Wq4qQvUnc_ElfMm_1sCznAiDSNeDUBnbv9cf0QdgJS',
         });
     } catch (error) {
         console.error('failed to load the PayPal JS SDK script', error);
@@ -76,7 +76,7 @@ onMounted(async () => {
                                     "currency_code": "USD",
                                     "value": price + '',
                                 },
-                                "reference_id": "AblowdzjW4qMJOBp7OZNdpHd3GiiFBLnJet_zderciQE9qDsq3_bYfc3SmVPloWY7Rezl1DTP7_lcXZ7"
+                                "reference_id": "AUBq6Qa0U5fokeiuUwrVych76fQJGgV423fV38Wq4qQvUnc_ElfMm_1sCznAiDSNeDUBnbv9cf0QdgJS"
                             },
                         ],
                     });
