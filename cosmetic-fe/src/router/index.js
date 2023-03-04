@@ -5,6 +5,7 @@ import SearchView from '../views/SearchView.vue'
 import CartView from '../views/CartView.vue'
 import ManagerUserView from '../views/ManageUserView.vue'
 import PaymentView from '../views/PaymentView.vue'
+import DetailProduct from '../views/ProductDetailView.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -45,6 +46,11 @@ const router = createRouter({
       path: '/payment',
       name: 'payment',
       component: PaymentView
+    },
+    {
+      path: '/product-detail',
+      name: 'product-detail',
+      component: DetailProduct
     }
   ]
 })
