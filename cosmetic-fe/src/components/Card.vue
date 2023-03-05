@@ -21,7 +21,8 @@ export default {
         return {
             isShowQuickViewBtn: false,
             isShowQuickView: false,
-            isModalShow: false
+            isModalShow: false,
+            currentQuantity: 1
         }
     },
     methods: {
@@ -70,15 +71,11 @@ export default {
                 })
         },
         async updateProductInCart(e) {
-            const id = e.target.id.split(' ')
-            const cosmeticId = id[0]
-            const inputId = cosmeticId + ' input'
-            const input = document.getElementById(inputId)
-            const value = parseInt(input.value)
-            if (isNaN(value) || value <=0) {
+            const value = parseInt(this.currentQuantity)
+            if (isNaN(value) || value <= 0) {
                 toast.error("Số lượng không hợp lệ!", { theme: 'colored' })
             }
-            await CartAPI.addCartItem(cosmeticId, value)
+            await CartAPI.addCartItem(this.cosmetic.COSMETIC_ID, value)
                 .then(res => {
                     toast.success("Thêm sản phẩm vào giỏ thành công!", { theme: 'colored' })
                 })
@@ -90,6 +87,30 @@ export default {
                 .then(res => {
                     this.commitCartQuantity(res.data.listCartItem.length)
                 })
+        },
+        minusQuantity() {
+            if (isNaN(this.currentQuantity) || parseInt(this.currentQuantity) <= 0) {
+                toast.error("Số lượng không hợp lệ", { theme: 'colored' })
+                return
+            }
+            this.currentQuantity = parseInt(this.currentQuantity) - 1
+        },
+        plusQuantity() {
+            if (isNaN(this.currentQuantity) || parseInt(this.currentQuantity) <= 0) {
+                toast.error("Số lượng không hợp lệ", { theme: 'colored' })
+                return
+            }
+            this.currentQuantity = parseInt(this.currentQuantity) + 1
+        },
+        checkValueOfInput(e) {
+            const value = e.target.value
+            if (isNaN(value) || parseInt(value) <= 0) {
+                toast.error("Số lượng không hợp lệ", { theme: 'colored' })
+                return
+            }
+        },
+        gotoDetail() {
+            this.$router.push('/product-detail/'+ this.cosmetic.COSMETIC_ID)
         }
     },
     computed: {
@@ -176,12 +197,14 @@ export default {
                     </div>
                     <div class="add-to-cart-group">
                         <div class="group-btn-input">
-                            <button class="btn-plus-minus">-</button>
-                            <input value="1" :id="cosmetic.COSMETIC_ID + ' input'"/>
-                            <button class="btn-plus-minus">+</button>
+                            <button class="btn-plus-minus" @click="minusQuantity"
+                                :disabled="parseInt(currentQuantity) === 1">-</button>
+                            <input v-model="currentQuantity" @change="checkValueOfInput" />
+                            <button class="btn-plus-minus" @click="plusQuantity"
+                                :disabled="parseInt(currentQuantity) === parseInt(cosmetic.QUANTITY)">+</button>
                         </div>
-                        <button :id="cosmetic.COSMETIC_ID + ' btn2'" @click="updateProductInCart"
-                            class="add-to-cart-quickview">Thêm vào giỏ</button>
+                        <button class="add-to-cart-quickview" @click="updateProductInCart"
+                            :disabled="parseInt(cosmetic.QUANTITY) === 0">Thêm vào giỏ</button>
                     </div>
                     <div class="categories">
                         <div>Thể loại:</div>
@@ -200,7 +223,7 @@ export default {
             </button>
         </div>
         <div class="box-text">
-            <div class="product-name">
+            <div class="product-name" @click="gotoDetail">
                 {{ cosmetic.COSMETIC_NAME }}
             </div>
             <div class="product-price">
@@ -316,7 +339,6 @@ export default {
 
 .card-product .quick-view-content .content .add-to-cart-group .group-btn-input {
     display: flex;
-    align-items: center;
 }
 
 .card-product .quick-view-content .content .add-to-cart-group .btn-plus-minus {
@@ -351,7 +373,7 @@ export default {
     width: 20px;
     text-align: center;
     border: 1px solid rgb(219, 215, 215);
-    padding: 10px 10px;
+    padding: 9px 10px;
 }
 
 .card-product .quick-view-content .white-space {
@@ -410,6 +432,7 @@ export default {
     text-align: center;
     font-size: 13px;
     min-height: 58px;
+    cursor: pointer;
 }
 
 .card-product .img-container {

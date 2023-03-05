@@ -15,6 +15,8 @@ class ProductAPI {
     static async searchProduct(keyword, page, limit) {
         return await axiosPath.default().get('/api/product/searchProductByKeyword', { params: { keyword: keyword, page: page, limit: limit } });
     }
-    
+    static async getProductById(id) {
+        return await axiosPath.default().get('/api/product/getProductById/' + id);
+    }
 }
 export default ProductAPI

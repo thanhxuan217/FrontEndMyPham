@@ -22,7 +22,7 @@ export default {
         ...mapActions(useUserStore, ["commitUserInfo"]),
         ...mapActions(useCartStore, ['commitCartQuantity']),
         handleScrollHeader() {
-            if (window.scrollY >= 130 && window.innerWidth > 886) {
+            if (window.scrollY >= 52 && window.innerWidth > 886) {
                 this.isShowBotHeader = true
             }
             else {
@@ -261,9 +261,14 @@ export default {
                 </div>
             </div>
         </div>
+        <div :class="{'active-bot-header': isShowBotHeader}"></div>
     </div>
 </template>
 <style scoped>
+.active-bot-header {
+    /* + them height cu vi position noi len */
+    height: 93px;
+}
 .top-header,
 .bot-header {
     border-bottom: 1px solid rgb(219, 208, 208);
@@ -483,7 +488,6 @@ export default {
     font-size: 17px;
 }
 
-
 .header .active {
     position: fixed;
     z-index: 9999;
@@ -493,7 +497,9 @@ export default {
     left: 0;
 }
 
-
+.active-top-header {
+    height: 92px;
+}
 /* absolute dua vao position cha, neu ko co => html */
 .center-menu .my-dropdown-menu {
     display: flex;

@@ -184,10 +184,13 @@ const isEmptyCart = computed(() => {
                         </td>
                         <td>
                             <div class='quantity'>
-                                <button :id="index + ' btn-minus'" @click="minusOrPlusQuantity">-</button>
+                                <button :id="index + ' btn-minus'" :disabled="parseInt(cartItem.quantity) === 1"
+                                    @click="minusOrPlusQuantity">-</button>
                                 <input class='input-quantity' :id="cartItem.cosmetic.COSMETIC_ID + ' input'"
                                     :value="cartItem.quantity" @change="changeInput" />
-                                <button :id="index + ' btn-plus'" @click="minusOrPlusQuantity">+</button>
+                                <button :id="index + ' btn-plus'" @click="minusOrPlusQuantity"
+                                    :disabled="parseInt(cartItem.quantity) === parseInt(cartItem.cosmetic.QUANTITY)"
+                                    >+</button>
                             </div>
                         </td>
                         <td width="15%" class="thanhtien">

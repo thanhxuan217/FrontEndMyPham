@@ -48,7 +48,7 @@ const router = createRouter({
       component: PaymentView
     },
     {
-      path: '/product-detail',
+      path: '/product-detail/:id',
       name: 'product-detail',
       component: DetailProduct
     }
