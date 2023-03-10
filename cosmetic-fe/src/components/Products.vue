@@ -191,6 +191,13 @@ watch(
         }
     }
 )
+const getAllDiscountIsNot0Condition = computed(() => {
+    const discountsByCategories = product.value.discountsByCategories || []
+    const discountsByCosmetics = product.value.discountsByCosmetics || []
+    const allDiscount = [...discountsByCategories, ...discountsByCosmetics]
+    const result = allDiscount.filter(discount => parseInt(discount.DISCOUNT_CONDITION) !== 0)
+    return result
+})
 onMounted(() => {
     ProductAPI.getAllCategory()
         .then(res => {

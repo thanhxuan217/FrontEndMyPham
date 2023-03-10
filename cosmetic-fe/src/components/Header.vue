@@ -6,6 +6,7 @@ import AuthenticationAPI from '../api/LoginAPI/authenticationAPI';
 import ProductAPI from '../api/ProductAPI/ProductAPI'
 import { RouterLink } from 'vue-router'
 import CartAPI from '../api/CartAPI/CartAPI';
+import Register from './Register.vue';
 export default {
     data() {
         return {
@@ -14,76 +15,81 @@ export default {
             categories: [],
             isShowCategoriesDropdownMenu: false,
             isShowDiscountsDropdownMenu: false,
-            keyword: null
-        }
+            keyword: null,
+            isShowQuickView: false
+        };
     },
     methods: {
         // khai bao action su dung => su dung nhu this => use như function
         ...mapActions(useUserStore, ["commitUserInfo"]),
-        ...mapActions(useCartStore, ['commitCartQuantity']),
+        ...mapActions(useCartStore, ["commitCartQuantity"]),
         handleScrollHeader() {
             if (window.scrollY >= 52 && window.innerWidth > 886) {
-                this.isShowBotHeader = true
+                this.isShowBotHeader = true;
             }
             else {
-                this.isShowBotHeader = false
+                this.isShowBotHeader = false;
             }
             if (window.scrollY >= 64 && window.innerWidth <= 886) {
-                this.isShowTopHeader = true
+                this.isShowTopHeader = true;
             }
             else {
-                this.isShowTopHeader = false
+                this.isShowTopHeader = false;
             }
         },
         logOut() {
-            localStorage.setItem('accessToken', null);
-            localStorage.setItem('refreshToken', null);
-            this.commitUserInfo(null)
-            this.$router.push('/')
-            this.commitCartQuantity(0)
+            localStorage.setItem("accessToken", null);
+            localStorage.setItem("refreshToken", null);
+            this.commitUserInfo(null);
+            this.$router.push("/");
+            this.commitCartQuantity(0);
         },
         goToProductPage(e) {
-            const id = e.currentTarget.id.split(' ')
-            let discountId = null
+            const id = e.currentTarget.id.split(" ");
+            let discountId = null;
             let filter = {
                 categoryIds: [],
                 categoryDetailIds: [],
                 price: [0, 2000000]
-            }
+            };
             switch (id[0]) {
-                case 'category':
+                case "category":
                     filter = {
                         categoryIds: [id[1]],
                         categoryDetailIds: [],
                         price: [0, 2000000]
-                    }
-                    break
-                case 'categoryDetail':
+                    };
+                    break;
+                case "categoryDetail":
                     filter = {
                         categoryIds: [],
                         categoryDetailIds: [id[1]],
                         price: [0, 2000000]
-                    }
-                    break
-                case 'product':
+                    };
+                    break;
+                case "product":
                     filter = {
                         categoryIds: [],
                         categoryDetailIds: [],
                         price: [0, 2000000]
-                    }
-                    break
+                    };
+                    break;
                 default:
-                    discountId = id[1]
-                    break
+                    discountId = id[1];
+                    break;
             }
             if (discountId) {
-                this.$router.push({ name: 'products', query: { discountId: discountId }, replace: true })
-            } else {
-                this.$router.push({ name: 'products', query: { categoryIds: filter.categoryIds, categoryDetailIds: filter.categoryDetailIds, price: filter.price }, replace: true })
+                this.$router.push({ name: "products", query: { discountId: discountId }, replace: true });
+            }
+            else {
+                this.$router.push({ name: "products", query: { categoryIds: filter.categoryIds, categoryDetailIds: filter.categoryDetailIds, price: filter.price }, replace: true });
             }
         },
         searchProduct() {
-            this.$router.push({ name: 'search', query: { keyword: this.keyword }, replace: true })
+            this.$router.push({ name: "search", query: { keyword: this.keyword }, replace: true });
+        },
+        closeQuickView() {
+            this.isShowQuickView = false
         }
     },
     computed: {
@@ -96,22 +102,22 @@ export default {
             quantity: "quantity"
         }),
         getUserName() {
-            return this.userInfo !== null ? this.userInfo.userName : ""
+            return this.userInfo !== null ? this.userInfo.userName : "";
         },
         isLogged() {
-            return this.userInfo !== null ? true : false
+            return this.userInfo !== null ? true : false;
         },
         currentRouteName() {
-            return this.$router.currentRoute.value.fullPath
+            return this.$router.currentRoute.value.fullPath;
         },
         isPathIncludeCategory() {
-            return this.$router.currentRoute.value.fullPath.includes('category')
+            return this.$router.currentRoute.value.fullPath.includes("category");
         },
         isPathIncludeyDiscountId() {
-            return this.$router.currentRoute.value.fullPath.includes('discountId')
+            return this.$router.currentRoute.value.fullPath.includes("discountId");
         },
         getQuantity() {
-            return this.quantity
+            return this.quantity;
         }
     },
     mounted() {
@@ -120,28 +126,30 @@ export default {
             await AuthenticationAPI.getUser()
                 .then(res => {
                     // call commit to push userinfo to store
-                    this.commitUserInfo(res.data)
+                    this.commitUserInfo(res.data);
                 })
                 .catch(err => {
-                    this.commitUserInfo(null)
-                })
+                    this.commitUserInfo(null);
+                });
             await ProductAPI.getAllCategory()
                 .then(res => {
-                    this.categories = res.data
-                })
+                    this.categories = res.data;
+                });
             await CartAPI.getCartItem()
                 .then(res => {
-                    this.commitCartQuantity(res.data.listCartItem.length)
-                })
-        }
-        fetchData()
-        window.addEventListener('scroll', this.handleScrollHeader)
-    }
+                    this.commitCartQuantity(res.data.listCartItem.length);
+                });
+        };
+        fetchData();
+        window.addEventListener("scroll", this.handleScrollHeader);
+    },
+    components: { Register }
 }
 
 </script>
 <template>
     <div class="header">
+        <Register @closeQuickView="closeQuickView" v-if="isShowQuickView"/>
         <div class='top-header' :class="{ active: isShowTopHeader }">
             <nav class="top-header-content">
                 <div v-if="isLogged" className="top-header-account">
@@ -164,7 +172,7 @@ export default {
                     <RouterLink to='/login' class="none-underline login">
                         Đăng nhập
                     </RouterLink> |
-                    <a class="none-underline login">
+                    <a class="none-underline login" @click="isShowQuickView = true">
                         Đăng ký
                     </a>
                 </div>
@@ -261,7 +269,7 @@ export default {
                 </div>
             </div>
         </div>
-        <div :class="{'active-bot-header': isShowBotHeader}"></div>
+        <div :class="{ 'active-bot-header': isShowBotHeader }"></div>
     </div>
 </template>
 <style scoped>
@@ -269,6 +277,7 @@ export default {
     /* + them height cu vi position noi len */
     height: 93px;
 }
+
 .top-header,
 .bot-header {
     border-bottom: 1px solid rgb(219, 208, 208);
@@ -500,6 +509,7 @@ export default {
 .active-top-header {
     height: 92px;
 }
+
 /* absolute dua vao position cha, neu ko co => html */
 .center-menu .my-dropdown-menu {
     display: flex;
