@@ -10,5 +10,8 @@ class AuthenticationAPI {
     static async getUser() {
         return await axiosPath.authentication().get('/api/account/getUser')
     }
+    static async register(newUser) {
+        return await axiosPath.default().post('/api/account/register', newUser)
+    }
 }
 export default AuthenticationAPI;

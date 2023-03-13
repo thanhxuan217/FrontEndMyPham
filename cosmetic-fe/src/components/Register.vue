@@ -2,14 +2,68 @@
 import 'vue-slider-component/theme/antd.css'
 import { reactive, watch, nextTick, computed, ref } from 'vue'
 import { onMounted } from 'vue'
-
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
+import AuthenticationAPI from '../api/LoginAPI/AuthenticationAPI';
+import RegularExpression from '../util/RegularExpression'
 const emit = defineEmits(['closeQuickView'])
+const userName = ref(null)
+const email = ref(null)
+const password = ref(null)
+const repeatPassword = ref(null)
 
+const useNameError = ref(null)
+const emailError = ref(null)
+const passwordError = ref(null)
+const repeatPasswordError = ref(null)
 onMounted(() => {
 
 })
 function close() {
     emit('closeQuickView')
+}
+function register(e) {
+    const button = e.target
+    if (password.value !== repeatPassword.value) {
+        toast.error("Mật khẩu không khớp!", { theme: 'colored' })
+        repeatPasswordError.value = "Mật khẩu không khớp"
+        return
+    } else {
+        repeatPasswordError.value = null
+    }
+    if (!RegularExpression.checkUserName(userName.value)) {
+        toast.error("Tên tài phải có ít nhất 8 ký tự và không chứa ký tự đặc biệt!", { theme: 'colored' })
+        useNameError.value = "Tên tài phải có ít nhất 8 ký tự và không chứa ký tự đặc biệt!"
+        return
+    } else {
+        useNameError.value = null
+    }
+    if (!RegularExpression.checkEmail(email.value)) {
+        toast.error("Email không hợp lệ!", { theme: 'colored' })
+        emailError.value = "Email không hợp lệ!"
+        return
+    } else {
+        emailError.value = null
+    }
+    if (!RegularExpression.checkPassword(password.value)) {
+        toast.error("Email không hợp lệ!", { theme: 'colored' })
+        emailError.value = "Email không hợp lệ!"
+        return
+    } else {
+        emailError.value = null
+    }
+    button.disabled = true
+    const data = { userName: userName.value, email: email.value, password: password.value }
+    AuthenticationAPI
+        .register(data)
+        .then(res => {
+            toast.success("Đăng ký thành công", { theme: 'colored' })
+            emit('closeQuickView')
+        })
+        .catch(err => {
+            button.disabled = false
+            toast.error(err.response.data, { theme: 'colored' })
+        })
 }
 </script>
 <template>
@@ -28,29 +82,32 @@ function close() {
                 <div class="group-input">
                     <div class='my-input'>
                         <label>Tên tài khoản:</label>
-                        <input placeholder="Tên tài khoản" class="split" />
+                        <input placeholder="Tên tài khoản" class="split" v-model="userName" />
                         <label class='error'></label>
                     </div>
                     <div class='my-input'>
                         <label>Email:</label>
-                        <input placeholder="Email" class="split" />
+                        <input placeholder="Email" class="split" v-model="email" />
                         <label class='error'></label>
                     </div>
                     <div class='my-input'>
                         <label>Mật khẩu:</label>
-                        <input placeholder="Mật khẩu" class="split" type="password" />
-                        <label class='error'></label>
+                        <input placeholder="Mật khẩu" class="split" type="password" v-model="password" />
+                        <label class='error'>
+
+                        </label>
                     </div>
                     <div class='my-input'>
                         <label>Nhập lại mật khẩu:</label>
-                        <input placeholder="Nhập lại mật khẩu" class="split" type="password"/>
-                        <label class='error'></label>
+                        <input placeholder="Nhập lại mật khẩu" class="split" type="password" v-model="repeatPassword" />
+                        <label class='error'>
+                            {{ repeatPasswordError }}
+                        </label>
                     </div>
                     <div class='register'>
-                        <button class="">Đăng ký</button>
+                        <button class="" @click="register">Đăng ký</button>
                     </div>
                 </div>
-
             </div>
         </div>
 
@@ -138,5 +195,6 @@ function close() {
     background-color: #909b6b;
     border: 1px solid #909b6b;
     color: white;
+    cursor: pointer;
 }
 </style>
