@@ -24,13 +24,6 @@ function close() {
 }
 function register(e) {
     const button = e.target
-    if (password.value !== repeatPassword.value) {
-        toast.error("Mật khẩu không khớp!", { theme: 'colored' })
-        repeatPasswordError.value = "Mật khẩu không khớp"
-        return
-    } else {
-        repeatPasswordError.value = null
-    }
     if (!RegularExpression.checkUserName(userName.value)) {
         toast.error("Tên tài phải có ít nhất 8 ký tự và không chứa ký tự đặc biệt!", { theme: 'colored' })
         useNameError.value = "Tên tài phải có ít nhất 8 ký tự và không chứa ký tự đặc biệt!"
@@ -38,19 +31,30 @@ function register(e) {
     } else {
         useNameError.value = null
     }
+
     if (!RegularExpression.checkEmail(email.value)) {
+        console.log(email.value)
         toast.error("Email không hợp lệ!", { theme: 'colored' })
         emailError.value = "Email không hợp lệ!"
         return
     } else {
         emailError.value = null
     }
+
     if (!RegularExpression.checkPassword(password.value)) {
-        toast.error("Email không hợp lệ!", { theme: 'colored' })
-        emailError.value = "Email không hợp lệ!"
+        toast.error("Mật khẩu không hợp lệ!", { theme: 'colored' })
+        passwordError.value = "Mật khẩu phải chứa ít nhất 1 số, 1 chữ thường, 1 chữ in và có ít nhất 8 ký tự!"
         return
     } else {
-        emailError.value = null
+        passwordError.value = null
+    }
+
+    if (password.value !== repeatPassword.value) {
+        toast.error("Mật khẩu không khớp!", { theme: 'colored' })
+        repeatPasswordError.value = "Mật khẩu không khớp"
+        return
+    } else {
+        repeatPasswordError.value = null
     }
     button.disabled = true
     const data = { userName: userName.value, email: email.value, password: password.value }
@@ -83,18 +87,22 @@ function register(e) {
                     <div class='my-input'>
                         <label>Tên tài khoản:</label>
                         <input placeholder="Tên tài khoản" class="split" v-model="userName" />
-                        <label class='error'></label>
+                        <label class='error'>
+                            {{ useNameError }}
+                        </label>
                     </div>
                     <div class='my-input'>
                         <label>Email:</label>
                         <input placeholder="Email" class="split" v-model="email" />
-                        <label class='error'></label>
+                        <label class='error'>
+                            {{ emailError }}
+                        </label>
                     </div>
                     <div class='my-input'>
                         <label>Mật khẩu:</label>
                         <input placeholder="Mật khẩu" class="split" type="password" v-model="password" />
                         <label class='error'>
-
+                            {{ passwordError }}
                         </label>
                     </div>
                     <div class='my-input'>

@@ -6,6 +6,8 @@ import CartView from '../views/CartView.vue'
 import ManagerUserView from '../views/ManageUserView.vue'
 import PaymentView from '../views/PaymentView.vue'
 import DetailProduct from '../views/ProductDetailView.vue'
+import ActiveAccount from '../views/ActiveAccountView.vue'
+import OrderHistoriesView from '../views/OrderHistoriesView.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -51,6 +53,16 @@ const router = createRouter({
       path: '/product-detail/:id',
       name: 'product-detail',
       component: DetailProduct
+    },
+    {
+      path: '/active-account/:token',
+      name: 'active-account',
+      component: ActiveAccount
+    },
+    {
+      path: '/orders',
+      name: 'orders',
+      component: OrderHistoriesView
     },
   ]
 })
