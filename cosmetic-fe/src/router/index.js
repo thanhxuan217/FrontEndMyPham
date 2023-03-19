@@ -64,6 +64,12 @@ const router = createRouter({
       name: 'orders',
       component: OrderHistoriesView
     },
+    {
+      path: '/admin',
+      name: 'admin',
+      component: OrderHistoriesView,
+      meta: { layout: "admin" },
+    },
   ]
 })
 

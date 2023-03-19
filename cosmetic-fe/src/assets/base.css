@@ -12,6 +12,9 @@ body,
   /* background-color: #dee4f7; */
   font-size: 15px;
 }
+* {
+  box-sizing: revert
+}
 
 input {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -210,7 +213,7 @@ code {
   justify-content: flex-start;
   align-items: center;
   flex-direction: column;
-  min-width: 265px;
+  width: 250px;
 }
 
 .my-input label {

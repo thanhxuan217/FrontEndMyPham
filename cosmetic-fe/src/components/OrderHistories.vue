@@ -37,6 +37,16 @@ function getStatus(status) {
     }
     return result
 }
+function getSumPrice(order) {
+    let sumprice = 0
+    const orderdetails = order.order_details || []
+    if (orderdetails.length) {
+        orderdetails.forEach(orderDetail => {
+            sumprice += parseInt(orderDetail.QUANTITY) * parseFloat(orderDetail.PRICE)
+        })
+    }
+    return sumprice + parseFloat(order.SHIP_PRICE)
+}
 </script>
 <template>
     <div class='change-userinfo-form-right-container order-history'>
@@ -74,7 +84,7 @@ function getStatus(status) {
                         <div class='order-title'>
                             Trạng thái
                         </div>
-                        <div class='order-content'>
+                        <div class='order-content status'>
                             {{ getStatus(order.STATUS) }}
                         </div>
                     </div>
@@ -87,11 +97,10 @@ function getStatus(status) {
                             <img :src="orderDetail.COSMETIC.IMAGE.IMAGE_URL" />
                             <div class='product-name'>
                                 <label>{{ orderDetail.COSMETIC.COSMETIC_NAME }}</label>
-                                <label>x{{ orderDetail.COSMETIC.QUANTITY }}</label>
+                                <label><b>x{{ orderDetail.QUANTITY }}</b></label>
                             </div>
                         </div>
                         <div class='detail'>
-
                         </div>
                         <div class='price'>
                             Giá: {{ VNDCurrencyFormatter.formatToVND(orderDetail.PRICE) }}
@@ -110,10 +119,10 @@ function getStatus(status) {
                     </div>
                     <div class='sum-price'>
                         <label>
-                            Tổng tiền:&nbsp;
+                            Thành tiền:&nbsp;
                         </label>
-                        <label>
-                            
+                        <label class="thanhtien">
+                            {{ VNDCurrencyFormatter.formatToVND(getSumPrice(order)) }}
                         </label>
                     </div>
                 </div>
@@ -198,9 +207,12 @@ function getStatus(status) {
 }
 
 .order-history-content .order-container .order-info .group-2 .order-content {
-    font-weight: bold;
+    
 }
-
+.order-history-content .order-container .order-info .group-2 .status {
+    color: red;
+    text-transform: uppercase;
+}
 .order-history-content .order-container .order-detail {
     display: flex;
     flex-direction: column;
@@ -237,11 +249,15 @@ function getStatus(status) {
     justify-content: flex-end;
 }
 
-.order-history-content .order-container .price-info .ship-price,
+
 .order-history-content .order-container .price-info .sum-price {
     display: flex;
     flex-direction: row;
     justify-content: flex-end;
     align-items: center;
+}
+.order-history-content .order-container .price-info .sum-price .thanhtien {
+    font-size: 24px;
+    color: red;
 }
 </style>

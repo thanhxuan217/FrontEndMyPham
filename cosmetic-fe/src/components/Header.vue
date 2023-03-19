@@ -7,6 +7,7 @@ import ProductAPI from '../api/ProductAPI/ProductAPI'
 import { RouterLink } from 'vue-router'
 import CartAPI from '../api/CartAPI/CartAPI';
 import Register from './Register.vue';
+import { ref } from "vue";
 export default {
     data() {
         return {
@@ -102,7 +103,8 @@ export default {
             quantity: "quantity"
         }),
         getUserName() {
-            return this.userInfo !== null ? this.userInfo.userName : "";
+            const userInfo = this.userInfo !== null ? this.userInfo.userName : ""
+            return 'Xin chào: ' + userInfo;
         },
         isLogged() {
             return this.userInfo !== null ? true : false;
@@ -149,24 +151,53 @@ export default {
 </script>
 <template>
     <div class="header">
-        <Register @closeQuickView="closeQuickView" v-if="isShowQuickView"/>
+        <Register @closeQuickView="closeQuickView" v-if="isShowQuickView" />
         <div class='top-header' :class="{ active: isShowTopHeader }">
             <nav class="top-header-content">
-                <div v-if="isLogged" className="top-header-account">
-                    <div className="title">
-                        <div>
-                            <!-- <img src="" class="avatar" alt="image" /> -->
+                <div v-if="isLogged">
+                    <q-btn-dropdown unelevated outline fab-mini push no-caps size="13px" color="#909b6b">
+                        <template v-slot:label>
+                            <div class="row items-center no-wrap">
+                                <q-icon left name="manage_accounts" />
+                                <div class="text-center">
+                                    {{ getUserName }}
+                                </div>
+                            </div>
+                        </template>
+                        <div class="row no-wrap q-pa-md">
+                            <div class="column">
+                                <!-- two item in column -->
+                                <div class="text-h6 q-mb-md">Tài khoản</div>
+                                <q-list bordered class="rounded-borders text-primary">
+                                    <q-item to="/address" clickable v-ripple :active="link === 'address'"
+                                        @click="link = 'address'" active-class="my-menu-link" cursor-pointer
+                                        style="min-height: 0px;height: 35px;"
+                                        >
+                                        <q-item-section avatar>
+                                            <q-icon size="20px" left name="place" />
+                                        </q-item-section>
+                                        <q-item-section>Địa chỉ</q-item-section>
+                                    </q-item>
+                                    <q-separator spaced />
+                                    <q-item style="min-height: 0px;height: 35px;" to="/orders" clickable v-ripple :active="link === 'orders'"
+                                        @click="link = 'orders'" active-class="my-menu-link" cursor-pointer>
+                                        <q-item-section avatar>
+                                            <q-icon size="20px" left name="list_alt" />
+                                        </q-item-section>
+                                        <q-item-section>Đơn đặt</q-item-section>
+                                    </q-item>
+                                </q-list>
+                            </div>
+                            <q-separator vertical inset class="q-mx-lg" />
+                            <div class="column items-center">
+                                <q-avatar size="72px" class="q-mb-md">
+                                    <img src="https://cdn.quasar.dev/img/boy-avatar.png">
+                                </q-avatar>
+                                <q-btn @click="logOut" color="primary" label="Đăng xuất" push size="sm" v-close-popup />
+                            </div>
                         </div>
-                        <div class="text">
-                            Xin chào, {{ getUserName }}
-                        </div>
-                        <RouterLink to='/address' class="none-underline text">
-                            Địa chỉ
-                        </RouterLink>
-                        <div class="text" @click="logOut">
-                            Đăng xuất
-                        </div>
-                    </div>
+                    </q-btn-dropdown>
+
                 </div>
                 <div v-else class="top-header-account">
                     <RouterLink to='/login' class="none-underline login">
@@ -273,6 +304,11 @@ export default {
     </div>
 </template>
 <style scoped>
+.my-menu-link {
+    color: #fff;
+    background: #909b6b;
+}
+
 .active-bot-header {
     /* + them height cu vi position noi len */
     height: 93px;

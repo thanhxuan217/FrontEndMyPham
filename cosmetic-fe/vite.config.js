@@ -3,9 +3,16 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
+import { quasar, transformAssetUrls } from '@quasar/vite-plugin'
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue({
+      template: { transformAssetUrls }
+    }),
+
+    quasar()
+  ],
   resolve: {
     alias: {
       // thay cho @ => lay tu ./src
@@ -13,7 +20,7 @@ export default defineConfig({
       '~bootstrap': path.resolve(__dirname, 'node_modules/bootstrap'),
       '~bootstrap-icons': path.resolve(__dirname, 'node_modules/bootstrap-icons'),
     }
-  }, 
+  },
   server: {
     port: 3000,
     hot: true
