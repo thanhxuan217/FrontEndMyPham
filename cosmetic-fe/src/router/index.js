@@ -8,66 +8,98 @@ import PaymentView from '../views/PaymentView.vue'
 import DetailProduct from '../views/ProductDetailView.vue'
 import ActiveAccount from '../views/ActiveAccountView.vue'
 import OrderHistoriesView from '../views/OrderHistoriesView.vue'
+import AdminLayout from '../layout/AdminLayout.vue'
+import ClientLayout from '../layout/ClientLayout.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
       name: 'home',
-      component: HomeView
-    },
-    {
-      path: '/login',
-      name: 'login',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/LoginView.vue')
-    },
-    {
-      path: '/products',
-      name: 'products',
-      component: ProductsView
-    },
-    {
-      path: '/search',
-      name: 'search',
-      component: SearchView
-    },
-    {
-      path: '/cart',
-      name: 'cart',
-      component: CartView
-    },
-    {
-      path: '/address',
-      name: 'address',
-      component: ManagerUserView
-    },
-    {
-      path: '/payment',
-      name: 'payment',
-      component: PaymentView
-    },
-    {
-      path: '/product-detail/:id',
-      name: 'product-detail',
-      component: DetailProduct
-    },
-    {
-      path: '/active-account/:token',
-      name: 'active-account',
-      component: ActiveAccount
-    },
-    {
-      path: '/orders',
-      name: 'orders',
-      component: OrderHistoriesView
+      component: ClientLayout,
+      children: [
+        {
+          path: '/',
+          name: 'home',
+          // route level code-splitting
+          // this generates a separate chunk (About.[hash].js) for this route
+          // which is lazy-loaded when the route is visited.
+          component: HomeView,
+        },
+        {
+          path: '/login',
+          name: 'login',
+          // route level code-splitting
+          // this generates a separate chunk (About.[hash].js) for this route
+          // which is lazy-loaded when the route is visited.
+          component: () => import('../views/LoginView.vue'),
+          meta: { layout: "client" },
+        },
+        {
+          path: '/products',
+          name: 'products',
+          component: ProductsView,
+          meta: { layout: "client" },
+        },
+        {
+          path: '/search',
+          name: 'search',
+          component: SearchView,
+          meta: { layout: "client" },
+        },
+        {
+          path: '/cart',
+          name: 'cart',
+          component: CartView,
+          meta: { layout: "client" },
+        },
+        {
+          path: '/address',
+          name: 'address',
+          component: ManagerUserView,
+          meta: { layout: "client" },
+        },
+        {
+          path: '/payment',
+          name: 'payment',
+          component: PaymentView,
+          meta: { layout: "client" },
+        },
+        {
+          path: '/product-detail/:id',
+          name: 'product-detail',
+          component: DetailProduct,
+          meta: { layout: "client" },
+        },
+        {
+          path: '/active-account/:token',
+          name: 'active-account',
+          component: ActiveAccount,
+          meta: { layout: "client" },
+        },
+        {
+          path: '/orders',
+          name: 'orders',
+          component: OrderHistoriesView,
+          meta: { layout: "client" },
+        },
+      ],
+      meta: { layout: "client" },
     },
     {
       path: '/admin',
       name: 'admin',
-      component: OrderHistoriesView,
+      component: AdminLayout,
+      children: [
+        {
+          path: '/',
+          name: 'home',
+          // route level code-splitting
+          // this generates a separate chunk (About.[hash].js) for this route
+          // which is lazy-loaded when the route is visited.
+          component: HomeView,
+        },
+      ],
       meta: { layout: "admin" },
     },
   ]

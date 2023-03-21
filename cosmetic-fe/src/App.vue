@@ -1,17 +1,11 @@
 <script setup>
 import { RouterLink, RouterView, useRoute } from 'vue-router'
-import HeaderView from './views/HeaderView.vue';
-import FooterView from './views/FooterView.vue';
 import { onMounted } from 'vue';
 import { ref } from 'vue'
-const route = useRoute()
-const leftDrawerOpen = ref(false)
-function toggleLeftDrawer() {
-  leftDrawerOpen.value = !leftDrawerOpen.value
-}
 </script>
 <template >
-  <div v-if="!route.meta.layout.includes('admin')">
+  <RouterView />
+<!-- <div v-if="!route.meta.layout.includes('admin')">
     <HeaderView />
     <RouterView />
     <FooterView />
@@ -86,17 +80,17 @@ function toggleLeftDrawer() {
       <router-view />
     </q-page-container>
 
-    <q-footer elevated class="bg-grey-8 text-white">
-      <q-toolbar>
-        <q-toolbar-title>
-          <q-avatar>
-            Leo
-          </q-avatar>
-        </q-toolbar-title>
-      </q-toolbar>
-    </q-footer>
+      <q-footer elevated class="bg-grey-8 text-white">
+        <q-toolbar>
+          <q-toolbar-title>
+            <q-avatar>
+              Leo
+            </q-avatar>
+          </q-toolbar-title>
+        </q-toolbar>
+      </q-footer>
 
-  </q-layout>
+    </q-layout> -->
   <!-- router-view will display the component that corresponds to the url => component in vue. -->
 </template>
 <style scoped></style>
