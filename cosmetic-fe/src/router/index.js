@@ -10,6 +10,7 @@ import ActiveAccount from '../views/ActiveAccountView.vue'
 import OrderHistoriesView from '../views/OrderHistoriesView.vue'
 import AdminLayout from '../layout/AdminLayout.vue'
 import ClientLayout from '../layout/ClientLayout.vue'
+import ListProduct from '../views/AdminView/ListProductView.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -19,7 +20,7 @@ const router = createRouter({
       component: ClientLayout,
       children: [
         {
-          path: '/',
+          path: '',
           name: 'home',
           // route level code-splitting
           // this generates a separate chunk (About.[hash].js) for this route
@@ -27,7 +28,7 @@ const router = createRouter({
           component: HomeView,
         },
         {
-          path: '/login',
+          path: 'login',
           name: 'login',
           // route level code-splitting
           // this generates a separate chunk (About.[hash].js) for this route
@@ -36,49 +37,49 @@ const router = createRouter({
           meta: { layout: "client" },
         },
         {
-          path: '/products',
+          path: 'products',
           name: 'products',
           component: ProductsView,
           meta: { layout: "client" },
         },
         {
-          path: '/search',
+          path: 'search',
           name: 'search',
           component: SearchView,
           meta: { layout: "client" },
         },
         {
-          path: '/cart',
+          path: 'cart',
           name: 'cart',
           component: CartView,
           meta: { layout: "client" },
         },
         {
-          path: '/address',
+          path: 'address',
           name: 'address',
           component: ManagerUserView,
           meta: { layout: "client" },
         },
         {
-          path: '/payment',
+          path: 'payment',
           name: 'payment',
           component: PaymentView,
           meta: { layout: "client" },
         },
         {
-          path: '/product-detail/:id',
+          path: 'product-detail/:id',
           name: 'product-detail',
           component: DetailProduct,
           meta: { layout: "client" },
         },
         {
-          path: '/active-account/:token',
+          path: 'active-account/:token',
           name: 'active-account',
           component: ActiveAccount,
           meta: { layout: "client" },
         },
         {
-          path: '/orders',
+          path: 'orders',
           name: 'orders',
           component: OrderHistoriesView,
           meta: { layout: "client" },
@@ -92,17 +93,16 @@ const router = createRouter({
       component: AdminLayout,
       children: [
         {
-          path: '/',
-          name: 'home',
+          path: '',// root path
+          name: 'home-admin',
           // route level code-splitting
           // this generates a separate chunk (About.[hash].js) for this route
           // which is lazy-loaded when the route is visited.
-          component: HomeView,
+          component: ListProduct,
         },
       ],
       meta: { layout: "admin" },
     },
   ]
 })
-
 export default router
