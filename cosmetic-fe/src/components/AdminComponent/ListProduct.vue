@@ -1,22 +1,74 @@
 <template>
   <div class="q-pa-md">
+    <q-dialog v-model="form" persistent full-height full-width>
+      <q-card class="column full-height no-wrap">
+        <q-card-section>
+          <div class="text-h6">{{ currentProduct === null ? 'Thêm' : 'Sửa' }}</div>
+        </q-card-section>
+        <q-card-section>
+          <q-form @reset="onReset" class="q-gutter-md">
+            <div class="column" style="gap: 10px">
+              <q-input filled v-model="name" label="Tên *" hint="Tên mỹ phẩm" lazy-rules
+                :rules="[val => val && val.length > 0 || 'Tên mỹ phẩm không được để trống']" />
+              <q-select outlined v-model="currentCategoriesSelected" multiple :options="categories" label="Thể loại" />
+              <div class="row">
+                <q-checkbox v-model="categoryDetailsSelected" :val="categoryDetail.CATEGORY_DETAIL_ID"
+                  :label="categoryDetail.CATEGORY_DETAIL_NAME" v-for="categoryDetail in getCategoryDetails"
+                  :key="categoryDetail.CATEGORY_DETAIL_ID" />
+              </div>
+              <q-input filled type="number" v-model="age" hint="Số lượng" label="Số lượng *" lazy-rules :rules="[
+                val => val !== null && val !== '' || 'Số lượng không được để trống',
+                val => val > 0 || 'Số lượng phải lớn hơn 0'
+              ]" />
+              <q-input filled type="number" v-model="age" hint="Giá" label="Giá *(VNĐ)" lazy-rules :rules="[
+                val => val !== null && val !== '' || 'Please type something',
+                val => val > 0 || 'Giá phải lớn hơn 0'
+              ]" />
+              <div class="row justify-between no-wrap" style="gap: 5px">
+                <div class="col-6">
+                  <q-input filled type="number" v-model="age" hint="Dung tích" label="Dung tích" lazy-rules :rules="[
+                    val => val > 0 || 'Dung tích phải lớn hơn 0'
+                  ]" />
+                </div>
+                <div class="col-6">
+                  <q-select outlined v-model="currentUnitSelected" :options="unit" label="Đơn vị" />
+                </div>
+              </div>
+              <q-select outlined v-model="model" :options="options" label="Nhà cung cấp" />
+              <q-input type="textarea" autofocus hint="Mô tả" />
+
+            </div>
+          </q-form>
+        </q-card-section>
+        <q-card-actions align="right" class="bg-white text-teal">
+          <q-btn label="Lưu" type="button" @click="saveProduct" color="primary" v-close-popup />
+          <q-btn label="Huỷ bỏ" color="primary" flat class="q-ml-sm" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
     <!-- row-key (tr) lay trong row => la ten cua row nha -->
     <q-table title="Treats" selection="multiple" v-model:selected="selected" :rows="rows" :columns="columns"
       row-key="COSMETIC_ID" :loading="loading" :filter="filter" no-data-label="I didn't find anything for you"
       no-results-label="The filter didn't uncover any results" separator="cell">
-      <template v-slot:top-right>
-        <q-btn color="primary" icon-right="archive" label="Export to csv" no-caps @click="exportTable" />
-      </template>
-      <template v-slot:loading>
-        <q-inner-loading showing color="primary" />
-      </template>
-      <template v-slot:top-left>
-        <q-input borderless dense debounce="300" v-model="filter" placeholder="Search">
+      <template v-slot:top>
+        <q-btn color="primary" :disable="loading" label="Thêm" @click="addRow" />
+        <q-btn class="q-ml-sm" color="primary" :disable="loading" label="Xoá" />
+        <q-space />
+        <q-input dense debounce="300" v-model="filter" placeholder="Search">
           <template v-slot:append>
             <q-icon name="search" />
           </template>
         </q-input>
       </template>
+      <!-- <template v-slot:bottom>
+        <q-btn color="primary" icon-right="archive" label="Tải xuống excel file" no-caps @click="exportTable" />
+      </template> -->
+      <template v-slot:loading>
+        <q-inner-loading showing color="primary" />
+      </template>
+      <!-- <template v-slot:top-left>
+        
+      </template> -->
       <!-- this is props from table -->
       <template v-slot:body="props">
         <q-tr :props="props">
@@ -41,6 +93,10 @@
           </q-td>
           <q-td key="providerName" :props="props">
             {{ props.row.PROVIDER_NAME }}
+          </q-td>
+          <q-td>
+            <q-icon @click="openForm" :id="props.row.COSMETIC_ID + ' edit'" name="edit" style="cursor: pointer;"
+              :props="props" />
           </q-td>
         </q-tr>
       </template>
@@ -121,10 +177,10 @@
 </template>
   
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import { exportFile, useQuasar } from 'quasar'
 import _ from 'lodash'
-import ProductAPI from '../../api/AdminAPI/ProductAPI';
+import ProductAPI from '../../api/AdminAPI/ProductAPI'
 const $q = useQuasar()
 const columns = [
   { name: 'name', align: 'center', label: 'Tên mỹ phẩm', field: 'name' },
@@ -133,110 +189,7 @@ const columns = [
   { name: 'capacity', label: 'Dung tích', field: 'capacity' },
   { name: 'unit', label: 'Đơn vị', field: 'unit' },
   { name: 'providerName', label: 'Nhà cung cấp', field: 'providerName' },
-  { name: 'delete', label: '' },
-]
-
-const originalRows = [
-  {
-    name: 'Frozen Yogurt',
-    calories: 159,
-    fat: 6.0,
-    carbs: 24,
-    protein: 4.0,
-    sodium: 87,
-    calcium: '14%',
-    iron: '1%'
-  },
-  {
-    name: 'Ice cream sandwich',
-    calories: 237,
-    fat: 9.0,
-    carbs: 37,
-    protein: 4.3,
-    sodium: 129,
-    calcium: '8%',
-    iron: '1%'
-  },
-  {
-    name: 'Eclair',
-    calories: 262,
-    fat: 16.0,
-    carbs: 23,
-    protein: 6.0,
-    sodium: 337,
-    calcium: '6%',
-    iron: '7%'
-  },
-  {
-    name: 'Cupcake',
-    calories: 305,
-    fat: 3.7,
-    carbs: 67,
-    protein: 4.3,
-    sodium: 413,
-    calcium: '3%',
-    iron: '8%'
-  },
-  {
-    name: 'Gingerbread',
-    calories: 356,
-    fat: 16.0,
-    carbs: 49,
-    protein: 3.9,
-    sodium: 327,
-    calcium: '7%',
-    iron: '16%'
-  },
-  {
-    name: 'Jelly bean',
-    calories: 375,
-    fat: 0.0,
-    carbs: 94,
-    protein: 0.0,
-    sodium: 50,
-    calcium: '0%',
-    iron: '0%'
-  },
-  {
-    name: 'Lollipop',
-    calories: 392,
-    fat: 0.2,
-    carbs: 98,
-    protein: 0,
-    sodium: 38,
-    calcium: '0%',
-    iron: '2%'
-  },
-  {
-    name: 'Honeycomb',
-    calories: 408,
-    fat: 3.2,
-    carbs: 87,
-    protein: 6.5,
-    sodium: 562,
-    calcium: '0%',
-    iron: '45%'
-  },
-  {
-    name: 'Donut',
-    calories: 452,
-    fat: 25.0,
-    carbs: 51,
-    protein: 4.9,
-    sodium: 326,
-    calcium: '2%',
-    iron: '22%'
-  },
-  {
-    name: 'KitKat',
-    calories: 518,
-    fat: 26.0,
-    carbs: 65,
-    protein: 7,
-    sodium: 54,
-    calcium: '12%',
-    iron: '6%'
-  }
+  { name: 'edit', label: '' },
 ]
 
 const rows = ref([])
@@ -245,6 +198,18 @@ const rowCount = ref(10)
 const filter = ref('')
 const selected = ref([])
 const products = ref([])
+const form = ref(false)
+const currentProduct = ref(null)
+const providers = ref([])
+const categories = ref([])
+let allCategory = []
+
+const categoryDetailsSelected = ref([])
+const currentCategoriesSelected = ref([])
+const currentUnitSelected = ref(null)
+const unit = [
+  'g', 'mg', 'l', 'ml'
+]
 onMounted(() => {
   ProductAPI.getProducts()
     .then(res => {
@@ -259,20 +224,41 @@ onMounted(() => {
         "IMAGE": cosmetic.IMAGE,
         "PROVIDER_NAME": cosmetic.PROVIDER ? cosmetic.PROVIDER.PROVIDER_NAME : null
       }))
-      console.log(rows.value)
       loading.value = false
     })
+  ProductAPI.getCategories()
+    .then(res => {
+      const options = _.map(res.data, category => ({
+        label: category.CATEGORY_NAME,
+        value: category.CATEGORY_ID
+      }))
+      categories.value = options
+      allCategory = res.data
+      currentCategoriesSelected.value.push(options[0])
+    })
+  ProductAPI.getProviders()
+    .then(res => {
+      providers.value = res.data
+    })
 })
-// function test(e) {
-//   console.log(e.currentTarget)
-// }
-// watch(rows, async (newRows, oldRows) => {
 
-//   const test = _.range(1, 3)
-//   // so sanh tung row trong rows => cai nao thay doi =>
-// },
-//   { deep: true }
-// )
+const getCategoryDetails = computed(() => {
+  if (currentCategoriesSelected.value) {
+    let categoryDetails = []
+    const currentCategoryIds = currentCategoriesSelected.value.map(category => parseInt(category.value))
+    allCategory.forEach(category => {
+      if (currentCategoryIds.includes(parseInt(category.CATEGORY_ID))) {
+        categoryDetails.push(category.category_details)
+      }
+    })
+    let result = []
+    _.forEach(categoryDetails, categoryDetail => {
+      result = [...result, ...categoryDetail]
+    })
+    console.log(result);
+    return result
+  }
+})
 
 function exportTable() {
   // naive encoding to csv format
@@ -318,7 +304,22 @@ function wrapCsvValue(val, formatFn, row) {
 
   return `"${formatted}"`
 }
+function openForm(e) {
+  const id = e.currentTarget.id.split(' ')
+  const productId = id[0]
+  const product = _.find(products.value, product => parseInt(product.COSMETIC_ID) === parseInt(productId))
+  currentProduct.value = product
+  form.value = true
+}
 
+function addRow() {
+  form.value = true
+  currentProduct.value = null
+}
+
+function saveProduct() {
+  // save new => current Product === null
+}
 // function onRowClick(row) {
 //   alert(`${row.name} clicked`)
 // }
