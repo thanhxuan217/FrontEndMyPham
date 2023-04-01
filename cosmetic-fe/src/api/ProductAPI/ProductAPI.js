@@ -18,5 +18,6 @@ class ProductAPI {
     static async getProductById(id) {
         return await axiosPath.default().get('/api/product/getProductById/' + id);
     }
+
 }
 export default ProductAPI

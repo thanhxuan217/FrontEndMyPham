@@ -3,40 +3,70 @@
     <q-dialog v-model="form" persistent full-height full-width>
       <q-card class="column full-height no-wrap">
         <q-card-section>
-          <div class="text-h6">{{ currentProduct === null ? 'Thêm' : 'Sửa' }}</div>
+          <div class="text-h6">Thêm</div>
         </q-card-section>
         <q-card-section>
-          <q-form @reset="onReset" class="q-gutter-md">
+          <q-form class="q-gutter-md">
             <div class="column" style="gap: 10px">
-              <q-input filled v-model="name" label="Tên *" hint="Tên mỹ phẩm" lazy-rules
+              <q-input outlined v-model="nameCreate" label="Tên *" lazy-rules
                 :rules="[val => val && val.length > 0 || 'Tên mỹ phẩm không được để trống']" />
+
               <q-select outlined v-model="currentCategoriesSelected" multiple :options="categories" label="Thể loại" />
+
               <div class="row">
-                <q-checkbox v-model="categoryDetailsSelected" :val="categoryDetail.CATEGORY_DETAIL_ID"
+                <q-checkbox outlined v-model="categoryDetailsSelected" :val="categoryDetail.CATEGORY_DETAIL_ID"
                   :label="categoryDetail.CATEGORY_DETAIL_NAME" v-for="categoryDetail in getCategoryDetails"
                   :key="categoryDetail.CATEGORY_DETAIL_ID" />
               </div>
-              <q-input filled type="number" v-model="age" hint="Số lượng" label="Số lượng *" lazy-rules :rules="[
+
+              <q-input outlined type="number" v-model="quantityCreate" label="Số lượng *" lazy-rules :rules="[
                 val => val !== null && val !== '' || 'Số lượng không được để trống',
                 val => val > 0 || 'Số lượng phải lớn hơn 0'
               ]" />
-              <q-input filled type="number" v-model="age" hint="Giá" label="Giá *(VNĐ)" lazy-rules :rules="[
+
+              <q-input outlined type="number" v-model="priceCreate" label="Giá *(VNĐ)" lazy-rules :rules="[
                 val => val !== null && val !== '' || 'Please type something',
                 val => val > 0 || 'Giá phải lớn hơn 0'
               ]" />
+
               <div class="row justify-between no-wrap" style="gap: 5px">
                 <div class="col-6">
-                  <q-input filled type="number" v-model="age" hint="Dung tích" label="Dung tích" lazy-rules :rules="[
-                    val => val > 0 || 'Dung tích phải lớn hơn 0'
-                  ]" />
+                  <q-input outlined type="number" v-model="capacityCreate" hint="Dung tích" label="Dung tích" lazy-rules
+                    :rules="[
+                      val => val > 0 || 'Dung tích phải lớn hơn 0'
+                    ]" />
                 </div>
                 <div class="col-6">
                   <q-select outlined v-model="currentUnitSelected" :options="unit" label="Đơn vị" />
                 </div>
               </div>
-              <q-select outlined v-model="model" :options="options" label="Nhà cung cấp" />
-              <q-input type="textarea" autofocus hint="Mô tả" />
-
+              <q-select outlined v-model="currentProviderSelected" :options="providers" label="Nhà cung cấp" />
+              <div class="column q-gutter-sm">
+                <q-input outlined @update:model-value="val => { fileCreate = val[0] }" type="file"
+                  hint="Tải ảnh địa diện" />
+                <q-img :src="getImageCreateUrl" v-if="getImageCreateUrl !== null" spinner-color="white"
+                  style="height: 150px; max-width: 150px">
+                  <template v-slot:loading>
+                    <div class="text-subtitle1 text-white">
+                      Loading...
+                    </div>
+                  </template>
+                </q-img>
+              </div>
+              <div class="column q-gutter-sm">
+                <q-input v-model:model-value="filesCreate" outlined multiple
+                  @update:model-value="val => { filesCreate = val }" type="file" hint="Tải ảnh của sản phẩm" />
+                <div class="q-gutter-sm row items-start no-wrap">
+                  <q-img v-for="imgUrl in getImagesCreateUrl" :src="imgUrl" style="height: 150px; max-width: 150px">
+                    <template v-slot:loading>
+                      <div class="text-subtitle1 text-white">
+                        Loading...
+                      </div>
+                    </template>
+                  </q-img>
+                </div>
+              </div>
+              <q-input outlined autogrow label="Mô tả" v-model="descriptionCreate"/>
             </div>
           </q-form>
         </q-card-section>
@@ -202,11 +232,19 @@ const form = ref(false)
 const currentProduct = ref(null)
 const providers = ref([])
 const categories = ref([])
+const nameCreate = ref(null)
+const quantityCreate = ref(null)
+const priceCreate = ref(null)
+const capacityCreate = ref(null)
+const descriptionCreate = ref(null)
+const fileCreate = ref(null)
+const filesCreate = ref(null)
 let allCategory = []
 
 const categoryDetailsSelected = ref([])
 const currentCategoriesSelected = ref([])
 const currentUnitSelected = ref(null)
+const currentProviderSelected = ref(null)
 const unit = [
   'g', 'mg', 'l', 'ml'
 ]
@@ -238,7 +276,11 @@ onMounted(() => {
     })
   ProductAPI.getProviders()
     .then(res => {
-      providers.value = res.data
+      const options = _.map(res.data, provider => ({
+        label: provider.PROVIDER_NAME,
+        value: provider.PROVIDER_ID
+      }))
+      providers.value = options
     })
 })
 
@@ -255,7 +297,6 @@ const getCategoryDetails = computed(() => {
     _.forEach(categoryDetails, categoryDetail => {
       result = [...result, ...categoryDetail]
     })
-    console.log(result);
     return result
   }
 })
@@ -319,7 +360,39 @@ function addRow() {
 
 function saveProduct() {
   // save new => current Product === null
+  let formData = new FormData()
+  formData.append('name', nameCreate.value)
+  formData.append('categoryDetailsId', categoryDetailsSelected.value)
+  formData.append('quantity', quantityCreate.value)
+  formData.append('capacity', capacityCreate.value)
+  formData.append('unit', currentUnitSelected.value)
+  formData.append('providerId', currentProviderSelected.value)
+  formData.append('description', descriptionCreate.value)
+  formData.append('price', priceCreate.value)
+  formData.append('avatar', fileCreate.value)
+  formData.append('imgs', filesCreate)
+
+  ProductAPI.addNewProduct(formData)
 }
+
+const getImageCreateUrl = computed(() => {
+  if (fileCreate.value) {
+    return window.URL.createObjectURL(fileCreate.value)
+  }
+  return null
+})
+
+const getImagesCreateUrl = computed(() => {
+  if (filesCreate.value) {
+    console.log(filesCreate.value)
+    const filesUrl = Array.from(filesCreate.value).map(file => {
+      return window.URL.createObjectURL(file)
+    })
+    return filesUrl
+  }
+  return null
+})
+
 // function onRowClick(row) {
 //   alert(`${row.name} clicked`)
 // }

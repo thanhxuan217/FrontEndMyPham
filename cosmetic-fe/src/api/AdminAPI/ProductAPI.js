@@ -9,5 +9,8 @@ class CartAPI {
     static async getCategories() {
         return await axiosPath.default().get('/api/admin/product/getAllCategory')
     }
+    static async addNewProduct(formData) {
+        return await axiosPath.formData().post('/api/admin/product/create', formData)
+    }
 }
 export default CartAPI

@@ -12,5 +12,11 @@ class axiosPath {
             baseURL: "http://localhost:8080",
         })
     }
+    static formData = () => {
+        return axios.create({
+            baseURL: "http://localhost:8080",
+            headers: { "Content-Type": "multipart/form-data" }
+        })
+    }
 }
 export default axiosPath;
