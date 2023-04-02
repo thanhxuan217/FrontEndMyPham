@@ -12,5 +12,11 @@ class CartAPI {
     static async addNewProduct(formData) {
         return await axiosPath.formData().post('/api/admin/product/create', formData)
     }
+    static async updateProduct(formData) {
+        return await axiosPath.formData().put('/api/admin/product/update', formData)
+    }
+    static async delete(ids) {
+        return await axiosPath.default().patch('/api/admin/product/delete', ids)
+    }
 }
 export default CartAPI

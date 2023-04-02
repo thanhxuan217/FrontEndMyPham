@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import { Quasar } from 'quasar'
+import { Quasar, Dialog } from 'quasar'
 import 'quasar/dist/quasar.css'
 import '@quasar/extras/material-icons/material-icons.css'
 import App from './App.vue'
@@ -12,7 +12,9 @@ import "~bootstrap-icons/font/bootstrap-icons.css"
 
 const app = createApp(App)
 app.use(Quasar, {
-  plugins: {}, // import Quasar plugins and add here
+  plugins: {
+    Dialog
+  }, // import Quasar plugins and add here
 })
 app.use(pinia)
 app.use(router)
