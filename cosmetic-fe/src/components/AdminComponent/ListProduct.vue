@@ -85,7 +85,7 @@
           <q-form class="q-gutter-md">
             <div class="column" style="gap: 10px">
               <q-input outlined v-model="nameEdit" label="Tên *" lazy-rules
-                :rules="[val => val && val.length > 0 || 'Tên mỹ phẩm không được để trống']" />
+                :rules="[val => val && val.length > 0 || 'Tên mỹ phẩm không được để trống']" disable />
 
               <q-select outlined v-model="currentCategoriesSelectedEdit" multiple :options="categories"
                 label="Thể loại" />
@@ -262,7 +262,7 @@
         <q-btn color="primary" :disable="loading" label="Thêm" @click="addRow" />
         <q-btn class="q-ml-sm" color="primary" :disable="loading" @click="deleteProduct" label="Xoá" />
         <q-space />
-        <q-input dense debounce="300" v-model="filter" placeholder="Hãy gõ gì đó..">
+        <q-input dense debounce="300" v-model="filter" placeholder="Tìm kiếm...">
           <template v-slot:append>
             <q-icon name="search" />
           </template>
@@ -806,27 +806,28 @@ function deleteProduct() {
 
 function filterProduct(rows) {
   if (filter.value) {
+    const lowercaseFilter = filter.value.toLowerCase()
     const filterResult = products.value.filter(cosmetic => {
-      if (cosmetic.COSMETIC_NAME.includes(filter.value)) {
+      if (cosmetic.COSMETIC_NAME.toLowerCase().includes(lowercaseFilter)) {
         return true
-      } else if (cosmetic.PRICE && cosmetic.PRICE.includes(filter.value)) {
+      } else if (cosmetic.PRICE && cosmetic.PRICE.toLowerCase().includes(lowercaseFilter)) {
         return true
-      } else if (cosmetic.UNIT && cosmetic.UNIT.includes(filter.value)) {
+      } else if (cosmetic.UNIT && cosmetic.UNIT.toLowerCase().includes(lowercaseFilter)) {
         return true
-      } else if (cosmetic.PROVIDER_NAME && cosmetic.PROVIDER_NAME.includes(filter.value)) {
+      } else if (cosmetic.PROVIDER_NAME && cosmetic.PROVIDER_NAME.toLowerCase().includes(lowercaseFilter)) {
         return true
       } else {
         const categoryDetailName = _.map(cosmetic.CATEGORY_DETAIL_ID_category_detail_cosmetic_categories, categoryDetail => {
-          return categoryDetail.CATEGORY_DETAIL_NAME
+          return categoryDetail.CATEGORY_DETAIL_NAME.toLowerCase()
         })
         const categoryName = _.map(cosmetic.CATEGORY_DETAIL_ID_category_detail_cosmetic_categories, categoryDetail => {
-          return categoryDetail.CATEGORY.CATEGORY_NAME
+          return categoryDetail.CATEGORY.CATEGORY_NAME.toLowerCase()
         })
-        const findFilterInCategoryName = categoryName.filter(item => item.includes(filter.value))
+        const findFilterInCategoryName = categoryName.filter(item => item.includes(lowercaseFilter))
         if (findFilterInCategoryName.length) {
           return true
         }
-        const findFilterInCategoryDetailName = categoryDetailName.filter(item => item.includes(filter.value))
+        const findFilterInCategoryDetailName = categoryDetailName.filter(item => item.includes(lowercaseFilter))
         if (findFilterInCategoryDetailName.length) {
           return true
         }

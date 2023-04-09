@@ -34,7 +34,7 @@ function toggleLeftDrawer() {
                     </q-item>
 
                     <q-item clickable v-ripple 
-                        active-class="my-menu-link">
+                        active-class="my-menu-link" to='/admin/order'>
                         <q-item-section avatar>
                             <q-icon name="grading" />
                         </q-item-section>

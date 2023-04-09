@@ -257,7 +257,7 @@ export default {
     flex-direction: column;
     flex-wrap: wrap;
     gap: 5px;
-    border: 1px solid #ECEBEB;
+    border: 1px solid #d0cbcb;
     border-radius: 5px;
 }
 
@@ -287,7 +287,7 @@ export default {
 .card-product .quick-view-content .content .img-slide {
     width: 400px;
 }
-
+/* border me */
 .card-product .quick-view-content .diaglog-image {
     display: flex;
     position: fixed;
