@@ -25,7 +25,8 @@ function toggleLeftDrawer() {
         <q-drawer show-if-above v-model="leftDrawerOpen" side="left" elevated>
             <div class="q-pa-md" style="max-width: 250px">
                 <q-list bordered padding class="rounded-borders text-primary">
-                    <q-item clickable v-ripple :active="pathName === '/admin'" @click="pathName = '/admin'" to='/admin' active-class="my-menu-link">
+                    <q-item clickable v-ripple :active="pathName === '/admin'" @click="pathName = '/admin'" to='/admin'
+                        active-class="my-menu-link">
                         <q-item-section avatar>
                             <q-icon name="inventory" />
                         </q-item-section>
@@ -33,16 +34,15 @@ function toggleLeftDrawer() {
                         <q-item-section>Quản lý sản phẩm</q-item-section>
                     </q-item>
 
-                    <q-item clickable v-ripple 
-                        active-class="my-menu-link" to='/admin/order'>
+                    <q-item clickable v-ripple active-class="my-menu-link" to='/admin/order'
+                        :active="pathName === '/admin/order'" @click="pathName = '/admin/order'">
                         <q-item-section avatar>
                             <q-icon name="grading" />
                         </q-item-section>
 
                         <q-item-section>Duyệt đơn hàng</q-item-section>
                     </q-item>
-                    <q-item clickable v-ripple 
-                        active-class="my-menu-link">
+                    <q-item clickable v-ripple active-class="my-menu-link">
                         <q-item-section avatar>
                             <q-icon name="discount" />
                         </q-item-section>
@@ -50,8 +50,7 @@ function toggleLeftDrawer() {
                         <q-item-section>Quản lý khuyến mãi</q-item-section>
                     </q-item>
 
-                    <q-item clickable v-ripple 
-                        active-class="my-menu-link">
+                    <q-item clickable v-ripple active-class="my-menu-link">
                         <q-item-section avatar>
                             <q-icon name="manage_accounts" />
                         </q-item-section>
@@ -59,18 +58,24 @@ function toggleLeftDrawer() {
                         <q-item-section>Quản lý tài khoản</q-item-section>
                     </q-item>
 
-                    <q-item clickable v-ripple 
-                        active-class="my-menu-link">
-                        <q-item-section avatar>
-                            <q-icon name="equalizer" />
-                        </q-item-section>
+                    <q-expansion-item expand-separator active-class="my-menu-link" to='/admin/statictis'
+                        :active="pathName === '/admin/statictis'" @click="pathName = '/admin/statictis'" icon="equalizer"
+                        label="Thống kê" default-opened :content-inset-level="1">
+                        <q-list>
+                            <q-item clickable v-ripple :active="pathName === '/admin/statictis'"
+                                @click="pathName = '/admin/statictis'" to='/admin/statictis' active-class="my-menu-link">
+                                <q-item-section>Tổng doanh thu</q-item-section>
+                            </q-item>
+                            <q-item clickable v-ripple active-class="my-menu-link">
+                                <q-item-section>Sản phẩm bán chạy nhất</q-item-section>
+                            </q-item>
+                        </q-list>
 
-                        <q-item-section>Thống kê</q-item-section>
-                    </q-item>
+                    </q-expansion-item>
+
                     <q-separator spaced />
 
-                    <q-item clickable v-ripple
-                        active-class="my-menu-link">
+                    <q-item clickable v-ripple active-class="my-menu-link">
                         <q-item-section avatar>
                             <q-icon name="settings" />
                         </q-item-section>

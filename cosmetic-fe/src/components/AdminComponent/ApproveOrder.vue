@@ -84,9 +84,20 @@
                                     </div>
                                     <div class="row" style="gap: 10px">
                                         <div class="col">
-                                            <q-field color="purple-12" label="Người duyệt" stack-label>
+                                            <q-field color="purple-12" label="Tổng tiền hàng" stack-label>
                                                 <template v-slot:control>
                                                     <div class="self-center full-width no-outline" tabindex="0">
+                                                        {{ VNDCurrencyFormatter.formatToVND(getSumOfOrder) }}
+                                                    </div>
+                                                </template>
+                                            </q-field>
+                                        </div>
+                                        <q-separator />
+                                        <div class="col">
+                                            <q-field color="purple-12" label="Người duyệt" stack-label>
+                                                <template v-slot:control>
+                                                    <div class="self-center full-width no-outline" tabindex="0"
+                                                        style="color: ;">
                                                         {{ currentOrderSelected.EMPLOYEE ?
                                                             currentOrderSelected.EMPLOYEE.EMPLOYEE_NAME : "Chưa có" }}
                                                     </div>
@@ -156,7 +167,8 @@
                                             <q-item-section avatar>
                                                 Trạng thái:
                                             </q-item-section>
-                                            <q-item-section>{{ currentOrderSelected.CLIENT.IS_DISABLED ? "Bị vô hiệu": "Hiện hành" }}</q-item-section>
+                                            <q-item-section>{{ currentOrderSelected.CLIENT.IS_DISABLED ? "Bị vô hiệu" :
+                                                "Hiện hành" }}</q-item-section>
                                         </q-item>
                                     </q-list>
                                 </q-card-section>
@@ -167,6 +179,37 @@
                 <q-separator />
                 <q-card-section>
                     <div class="text-h6">Chi tiết đơn đặt</div>
+                    <q-list bordered>
+                        <q-item v-for="orderDetail in getOrderDetails">
+                            <q-item-section avatar>
+                                <q-img :src="orderDetail.COSMETIC.IMAGE.IMAGE_URL" spinner-color="white"
+                                    style="height: 140px; max-width: 150px" />
+                            </q-item-section>
+                            <q-item-section>
+                                {{ orderDetail.COSMETIC.COSMETIC_NAME }}
+                            </q-item-section>
+                            <q-separator vertical dark />
+                            <q-item-section>
+                                <q-item-label style="font-weight: bold;">
+                                    {{ 'x ' + orderDetail.QUANTITY }}
+                                </q-item-label>
+                            </q-item-section>
+                            <q-item-section>
+                                <q-item-label>
+                                    Giá bán:
+                                </q-item-label>
+                                <q-item-label>
+                                    <span style="font-weight: bold;">
+                                        {{ VNDCurrencyFormatter.formatToVND(orderDetail.PRICE) }}
+                                    </span>
+                                    <span style="color: red;">
+                                        {{ " (-" + ((orderDetail.COSMETIC.PRICE - orderDetail.PRICE) /
+                                            orderDetail.COSMETIC.PRICE) * 100 + "%)" }}
+                                    </span>
+                                </q-item-label>
+                            </q-item-section>
+                        </q-item>
+                    </q-list>
 
                 </q-card-section>
             </q-card>
@@ -358,6 +401,20 @@ function getAddress(data) {
     const result = data.ADDRESS_DETAIL + ',  ' + data.VILLAGE.VILLAGE_NAME + ',  ' + data.VILLAGE.DISTRICT.DISTRICT_NAME + ',  ' + data.VILLAGE.DISTRICT.PROVINCE.PROVINCE_NAME;
     return result;
 }
+const getOrderDetails = computed(() => {
+    if (currentOrderSelected.value) {
+        return currentOrderSelected.value.order_details
+    }
+})
+const getSumOfOrder = computed(() => {
+    if (currentOrderSelected.value) {
+        let sum = 0
+        currentOrderSelected.value.order_details.forEach(orderDetail => {
+            sum += parseFloat(orderDetail.PRICE)
+        })
+        return sum
+    }
+})
 const fetchAPI = () => {
     loading.value = true
     OrderAPI.getAll().then(res => {
