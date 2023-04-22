@@ -50,12 +50,14 @@ function toggleLeftDrawer() {
                         <q-item-section>Quản lý khuyến mãi</q-item-section>
                     </q-item>
 
-                    <q-item clickable v-ripple active-class="my-menu-link">
+                    <q-item clickable v-ripple :active="pathName === '/admin/account'" @click="pathName = '/admin/account'"
+                        to='/admin/account' active-class="my-menu-link">
                         <q-item-section avatar>
                             <q-icon name="manage_accounts" />
                         </q-item-section>
 
-                        <q-item-section>Quản lý tài khoản</q-item-section>
+                        <q-item-section>Quản lý tài
+                            khoản</q-item-section>
                     </q-item>
 
                     <q-expansion-item expand-separator active-class="my-menu-link" to='/admin/statictis'
@@ -66,7 +68,9 @@ function toggleLeftDrawer() {
                                 @click="pathName = '/admin/statictis'" to='/admin/statictis' active-class="my-menu-link">
                                 <q-item-section>Tổng doanh thu</q-item-section>
                             </q-item>
-                            <q-item clickable v-ripple active-class="my-menu-link">
+                            <q-item clickable v-ripple :active="pathName === '/admin/popular-product'"
+                                @click="pathName = '/admin/popular-product'" to='/admin/popular-product'
+                                active-class="my-menu-link">
                                 <q-item-section>Sản phẩm bán chạy nhất</q-item-section>
                             </q-item>
                         </q-list>
