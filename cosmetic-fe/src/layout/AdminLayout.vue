@@ -1,12 +1,17 @@
 <script setup>
-import { RouterLink, RouterView, useRoute } from 'vue-router'
-import { ref, computed } from 'vue'
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
+const router = useRouter()
 const leftDrawerOpen = ref(false)
 const pathName = ref('/admin')
 function toggleLeftDrawer() {
     leftDrawerOpen.value = !leftDrawerOpen.value
 }
-
+onMounted(() => {
+    if (localStorage.getItem('accessToken') === null) {
+        router.push('/admin/login')
+    }
+}) 
 </script>
 
 <template>
@@ -42,13 +47,13 @@ function toggleLeftDrawer() {
 
                         <q-item-section>Duyệt đơn hàng</q-item-section>
                     </q-item>
-                    <q-item clickable v-ripple active-class="my-menu-link">
+                    <!-- <q-item clickable v-ripple active-class="my-menu-link">
                         <q-item-section avatar>
                             <q-icon name="discount" />
                         </q-item-section>
 
                         <q-item-section>Quản lý khuyến mãi</q-item-section>
-                    </q-item>
+                    </q-item> -->
 
                     <q-item clickable v-ripple :active="pathName === '/admin/account'" @click="pathName = '/admin/account'"
                         to='/admin/account' active-class="my-menu-link">
@@ -79,7 +84,7 @@ function toggleLeftDrawer() {
 
                     <q-separator spaced />
 
-                    <q-item clickable v-ripple active-class="my-menu-link">
+                    <!-- <q-item clickable v-ripple active-class="my-menu-link">
                         <q-item-section avatar>
                             <q-icon name="settings" />
                         </q-item-section>
@@ -93,7 +98,7 @@ function toggleLeftDrawer() {
                         </q-item-section>
 
                         <q-item-section>Giúp đỡ</q-item-section>
-                    </q-item>
+                    </q-item> -->
                 </q-list>
             </div>
         </q-drawer>

@@ -15,6 +15,7 @@ import ApproveOrder from '../views/AdminView/ApproveOrderView.vue'
 import Statictis from '../views/AdminView/StatictisView.vue'
 import PopularProductView from '../views/AdminView/PopularProductView.vue'
 import ListAccountView from '../views/AdminView/ListAccountView.vue'
+import LoginView from '../views/AdminView/LoginView.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -138,6 +139,14 @@ const router = createRouter({
         },
       ],
       meta: { layout: "admin" },
+    },
+    {
+      path: '/admin/login',// root path
+      name: 'login',
+      // route level code-splitting
+      // this generates a separate chunk (About.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: LoginView,
     },
   ]
 })
