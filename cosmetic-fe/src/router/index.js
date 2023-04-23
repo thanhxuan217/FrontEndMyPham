@@ -15,7 +15,9 @@ import ApproveOrder from '../views/AdminView/ApproveOrderView.vue'
 import Statictis from '../views/AdminView/StatictisView.vue'
 import PopularProductView from '../views/AdminView/PopularProductView.vue'
 import ListAccountView from '../views/AdminView/ListAccountView.vue'
-import LoginView from '../views/AdminView/LoginView.vue'
+import AdminLoginView from '../views/AdminView/LoginView.vue'
+import DiscountView from '../views/AdminView/DiscountView.vue'
+import LoginView from '../views/LoginView.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -38,7 +40,7 @@ const router = createRouter({
           // route level code-splitting
           // this generates a separate chunk (About.[hash].js) for this route
           // which is lazy-loaded when the route is visited.
-          component: () => import('../views/LoginView.vue'),
+          component: LoginView,
           meta: { layout: "client" },
         },
         {
@@ -137,16 +139,24 @@ const router = createRouter({
           // which is lazy-loaded when the route is visited.
           component: ListAccountView,
         },
+        {
+          path: 'discount',// root path
+          name: 'discount',
+          // route level code-splitting
+          // this generates a separate chunk (About.[hash].js) for this route
+          // which is lazy-loaded when the route is visited.
+          component: DiscountView,
+        },
       ],
       meta: { layout: "admin" },
     },
     {
       path: '/admin/login',// root path
-      name: 'login',
+      name: 'admin-login',
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      component: LoginView,
+      component: AdminLoginView,
     },
   ]
 })

@@ -84,7 +84,7 @@ function register(e) {
                     Đăng ký
                 </div>
                 <div class="group-input">
-                    <div class='my-input'>
+                    <div class='my-input' style="width: auto;">
                         <label>Tên tài khoản:</label>
                         <input placeholder="Tên tài khoản" class="split" v-model="userName" />
                         <label class='error'>
