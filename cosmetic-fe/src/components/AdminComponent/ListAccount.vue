@@ -497,4 +497,9 @@ function disableAccount() {
   })
 }
 </script>
+<style scoped>
+.q-card {
+  width: auto;
+}
+</style>
     
