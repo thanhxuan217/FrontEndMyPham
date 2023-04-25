@@ -12,10 +12,10 @@
         <q-card-section>
           <div class="text-h4">Chi tiết người dùng</div>
         </q-card-section>
-        <q-card style="height: 358px">
+        <q-card style="height: 358px;">
           <div class="q-pa-md">
             <div class="text-h6 q-mb-md">Thông tin người dùng</div>
-            <q-card class="my-card" flat bordered>
+            <q-card class="my-card"  flat bordered style="width: auto;">
               <q-item>
                 <q-item-section avatar>
                   <q-avatar>
