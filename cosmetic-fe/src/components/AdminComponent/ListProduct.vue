@@ -1,7 +1,7 @@
 <template>
   <div class="q-pa-md">
-    <q-dialog v-model="form" persistent full-height full-width>
-      <q-card class="column full-height no-wrap">
+    <q-dialog v-model="form" persistent>
+      <q-card class="column full-height no-wrap" style="width: 700px; max-width: 80vw;">
         <q-card-section>
           <div class="text-h6">Thêm</div>
         </q-card-section>
@@ -76,8 +76,8 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
-    <q-dialog v-model="formEdit" v-if="formEdit" persistent full-height full-width>
-      <q-card class="column full-height no-wrap">
+    <q-dialog v-model="formEdit" v-if="formEdit" persistent>
+      <q-card class="column full-height no-wrap" style="width: 700px; max-width: 80vw;">
         <q-card-section>
           <div class="text-h6">Sửa</div>
         </q-card-section>
@@ -153,8 +153,8 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
-    <q-dialog transition-show="slide-up" maximized transition-hide="slide-down" v-model="formDetail" v-if="formDetail"
-      persistent full-height full-width>
+    <q-dialog transition-show="slide-up" full-width transition-hide="slide-down" v-model="formDetail" v-if="formDetail"
+      persistent>
       <q-card class="column full-height no-wrap">
         <q-bar class="bg-primary">
           <q-space />
