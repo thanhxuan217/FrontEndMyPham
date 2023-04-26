@@ -305,6 +305,7 @@
           <q-td>
             <q-icon @click="openEditForm" :id="props.row.COSMETIC_ID + ' edit'" name="edit" style="cursor: pointer;"
               :props="props" />
+              |
             <q-icon @click="openDetailForm" :id="props.row.COSMETIC_ID + ' detail'" name="preview"
               style="cursor: pointer;" :props="props" />
           </q-td>
