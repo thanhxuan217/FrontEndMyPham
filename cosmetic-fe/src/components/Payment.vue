@@ -180,7 +180,7 @@ function cashPayment() {
         method: 'cash'
     })
         .then(res => {
-            toast.success("Thanh toán thành công!", { theme: 'colored' })
+            toast.success("Thành công!", { theme: 'colored' })
             cartStore.callAPIToComitQuantity()
             router.push('/')
         })

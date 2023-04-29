@@ -3,8 +3,8 @@ class OrderAPI {
     static async getAll() {
         return await axiosPath.default().get('/api/admin/order/getAll')
     }
-    static async approve(data) {
-        return await axiosPath.default().put('/api/admin/order/approve', data)
+    static async updateStatus(data) {
+        return await axiosPath.default().put('/api/admin/order/updateStatus', data)
     }
 }
 export default OrderAPI;

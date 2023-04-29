@@ -215,19 +215,29 @@
             </q-card>
         </q-dialog>
         <!-- row-key (tr) lay trong row => la ten cua row nha -->
-        <q-table title="Treats" selection="multiple" v-model:selected="selected" :rows="rows" :columns="columns"
+        <q-table title="Danh sách đơn hàng" :rows="rows" :columns="columns"
             row-key="ORDER_ID" :loading="loading" :filter="filter" :filter-method="filterProduct"
             no-data-label="I didn't find anything for you" no-results-label="The filter didn't uncover any results"
             separator="cell">
             <template v-slot:top>
-                <q-btn color="primary" :disable="loading" label="Duyệt" @click="approve" />
+                <div class="row items-center" style="justify-content: space-between;width: 100%;">
+                    <div class="q-pa-md row items-center">
+                        <div>
+                            <b>Lọc:</b>
+                        </div>
+                        <div class="q-gutter-sm">
+                            
+                        </div>
+                    </div>
+                    <!-- <q-btn color="primary" :disable="loading" label="Duyệt" @click="approve" />
                 <q-btn class="q-ml-sm" color="negative" :disable="loading" @click="reject" label="Từ chối" />
-                <q-space />
-                <q-input dense debounce="300" v-model="filter" placeholder="Tìm kiếm...">
-                    <template v-slot:append>
-                        <q-icon name="search" />
-                    </template>
-                </q-input>
+                <q-space /> -->
+                    <q-input dense debounce="300" v-model="filter" placeholder="Tìm kiếm...">
+                        <template v-slot:append>
+                            <q-icon name="search" />
+                        </template>
+                    </q-input>
+                </div>
             </template>
             <!-- <template v-slot:bottom>
           <q-btn color="primary" icon-right="archive" label="Tải xuống excel file" no-caps @click="exportTable" />
@@ -241,7 +251,6 @@
             <!-- this is props from table -->
             <template v-slot:header>
                 <q-tr>
-                    <q-th />
                     <q-th v-for="col in columns" :key="col.name">
                         {{ col.label }}
                     </q-th>
@@ -249,10 +258,6 @@
             </template>
             <template v-slot:body="props">
                 <q-tr :props="props">
-                    <q-td>
-                        <q-checkbox v-model="props.selected" :disable="parseInt(props.row.IS_APPROVE.value) !== 0" />
-                    </q-td>
-                    <!-- value in row -->
                     <q-td key="id" :props="props">
                         {{ props.row.ORDER_ID }}
                     </q-td>
@@ -271,23 +276,17 @@
                     <q-td key="shipPrice" :props="props">
                         {{ VNDCurrencyFormatter.formatToVND(props.row.SHIP_PRICE) }}
                     </q-td>
-                    <q-td key="status" :props="props">
-                        {{ props.row.STATUS }}
-                    </q-td>
-                    <q-td key="approve" :props="props">
-                        <!-- v model in popup edit bindding with q-select -->
-                        <!-- <q-popup-edit v-model="props.row.IS_APPROVE" v-slot="scope">
-                            <q-select outlined v-model="scope.value" :options="statuses" label="Duyệt đơn"
-                                @keyup.enter="scope.set">
-                                <template v-slot:after>
-                                    <q-btn flat dense color="negative" icon="cancel" @click.stop.prevent="scope.cancel" />
-                                    <q-btn flat dense color="positive" :value="scope.value" @click="test" id="test"
-                                        icon="check_circle" @click.stop.prevent="scope.set"
-                                        :disable="scope.validate(scope.value) === false || scope.initialValue === scope.value" />
-                                </template>
-                            </q-select>
-                        </q-popup-edit> -->
-                        {{ props.row.IS_APPROVE.label }}
+                    <q-td>
+                        <select @change="handleChangeSelect" :id="props.row.ORDER_ID + ' select'" class="my-select"
+                            :disabled="6 === parseInt(props.row.STATUS.value)">
+                            <option v-for="status in statuses" :value="status.value"
+                                :disabled="parseInt(status.value) <= parseInt(props.row.STATUS.value)"
+                                :selected="parseInt(status.value) === parseInt(props.row.STATUS.value)">
+                                {{ status.label }}
+                            </option>
+                        </select>
+                        <!-- <q-select @input-value="handleChangeSelect"  outlined :model-value="props.row.STATUS" :options="statuses" label="Trạng thái"
+                            :option-disable="opt => Object(opt) === opt ? parseInt(opt.value) <= parseInt(props.row.STATUS.value) : true" /> -->
                     </q-td>
                     <q-td key="admin" :props="props">
                         {{ props.row.EMPLOYEE ? props.row.EMPLOYEE.EMPLOYEE_NAME : null }}
@@ -333,8 +332,7 @@ const columns = [
     { name: 'method', label: 'Phương thức', field: 'method' },
     { name: 'shipPrice', label: 'Phí vận chuyển', field: 'shipPrice' },
     { name: 'status', align: 'center', label: 'Trạng thái', field: 'status' },
-    { name: 'approve', align: 'center', label: "Phê duyệt", field: "approve" },
-    { name: 'admin', label: 'Người duyệt', field: 'admin' },
+    { name: 'admin', align: 'center', label: "Người duyệt", field: "admin" },
     { name: '', label: '' },
 ]
 
@@ -348,12 +346,28 @@ const currentOrderSelected = ref(null)
 const splitterModel = ref(70)
 const statuses = [
     {
-        label: "Phê duyệt",
+        label: "Chưa duyệt",
         value: 1
     },
     {
-        label: "Từ chối",
-        value: 0
+        label: "Đã duyệt",
+        value: 2
+    },
+    {
+        label: "Đã thanh toán",
+        value: 3
+    },
+    {
+        label: "Đang chuẩn bị hàng",
+        value: 4
+    },
+    {
+        label: "Đang giao",
+        value: 5
+    },
+    {
+        label: "Đã hoàn thành",
+        value: 6
     }
 ]
 function test(e) {
@@ -362,10 +376,10 @@ function test(e) {
 function getStatus(status) {
     let result
     switch (parseInt(status)) {
-        case 0:
+        case 1:
             result = 'Đã thanh toán'
             break
-        case 1:
+        case 0:
             result = 'Chưa thanh toán'
             break
     }
@@ -401,11 +415,13 @@ function getAddress(data) {
     const result = data.ADDRESS_DETAIL + ',  ' + data.VILLAGE.VILLAGE_NAME + ',  ' + data.VILLAGE.DISTRICT.DISTRICT_NAME + ',  ' + data.VILLAGE.DISTRICT.PROVINCE.PROVINCE_NAME;
     return result;
 }
+
 const getOrderDetails = computed(() => {
     if (currentOrderSelected.value) {
         return currentOrderSelected.value.order_details
     }
 })
+
 const getSumOfOrder = computed(() => {
     if (currentOrderSelected.value) {
         let sum = 0
@@ -415,13 +431,14 @@ const getSumOfOrder = computed(() => {
         return sum
     }
 })
+
 const fetchAPI = () => {
     loading.value = true
     OrderAPI.getAll().then(res => {
         orders.value = res.data
         rows.value = _.map(res.data, order => {
             const address = getAddress(order.ADDRESS)
-            const status = getStatus(order.STATUS)
+            const status = statuses.find(status => parseInt(status.value) === parseInt(order.STATUS))
             const approve =
             {
                 label: getApproveStatus(order.IS_APPROVE),
@@ -523,5 +540,29 @@ function filterProduct(rows) {
         return rows
     }
 }
+
+function handleChangeSelect(e) {
+    const orderId = e.target.id.split(' ')[0]
+    const status = e.target.value
+    OrderAPI.updateStatus(
+        { orderId, status }
+    )
+        .then(res => {
+            fetchAPI()
+        })
+}
 </script>
+<style scoped>
+.my-select {
+    padding: 15px 10px;
+    outline: none;
+    border-radius: 3px;
+    border: solid 1px rgb(222, 219, 219);
+}
+
+.my-select option {
+    font-size: 13px;
+    border: none;
+}
+</style>
     
