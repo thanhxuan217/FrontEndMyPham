@@ -72,7 +72,7 @@
                                             </q-field>
                                         </div>
                                         <q-separator />
-                                        <div class="col">
+                                        <!-- <div class="col">
                                             <q-field color="purple-12" label="Phê duyệt" stack-label>
                                                 <template v-slot:control>
                                                     <div class="self-center full-width no-outline" tabindex="0">{{
@@ -80,7 +80,7 @@
                                                     </div>
                                                 </template>
                                             </q-field>
-                                        </div>
+                                        </div> -->
                                     </div>
                                     <div class="row" style="gap: 10px">
                                         <div class="col">
@@ -215,19 +215,21 @@
             </q-card>
         </q-dialog>
         <!-- row-key (tr) lay trong row => la ten cua row nha -->
-        <q-table title="Danh sách đơn hàng" :rows="rows" :columns="columns"
-            row-key="ORDER_ID" :loading="loading" :filter="filter" :filter-method="filterProduct"
+        <q-table class="admin-table" title="Danh sách đơn hàng" :rows="getAllOrder" :columns="columns" row-key="ORDER_ID"
+            :loading="loading" :filter="filter" :filter-method="filterProduct"
             no-data-label="I didn't find anything for you" no-results-label="The filter didn't uncover any results"
             separator="cell">
             <template v-slot:top>
                 <div class="row items-center" style="justify-content: space-between;width: 100%;">
-                    <div class="q-pa-md row items-center">
-                        <div>
-                            <b>Lọc:</b>
-                        </div>
-                        <div class="q-gutter-sm">
-                            
-                        </div>
+                    <div style="min-width: 250px; max-width: 300px">
+                        <q-badge color="secondary" class="q-mb-md">
+                            Lọc theo trạng thái:
+                        </q-badge>
+                        <q-select filled v-model="filterStatus" multiple :options="statuses">
+                            <template v-slot:prepend>
+                                <q-icon name="filter_alt" />
+                            </template>
+                        </q-select>
                     </div>
                     <!-- <q-btn color="primary" :disable="loading" label="Duyệt" @click="approve" />
                 <q-btn class="q-ml-sm" color="negative" :disable="loading" @click="reject" label="Từ chối" />
@@ -273,14 +275,14 @@
                     <q-td key="method" :props="props">
                         {{ props.row.METHOD }}
                     </q-td>
-                    <q-td key="shipPrice" :props="props">
-                        {{ VNDCurrencyFormatter.formatToVND(props.row.SHIP_PRICE) }}
+                    <q-td key="sum" :props="props">
+                        {{ VNDCurrencyFormatter.formatToVND(props.row.SUM) }}
                     </q-td>
-                    <q-td>
+                    <q-td key="status" :props="props">
                         <select @change="handleChangeSelect" :id="props.row.ORDER_ID + ' select'" class="my-select"
-                            :disabled="6 === parseInt(props.row.STATUS.value)">
+                            :disabled="6 === parseInt(props.row.STATUS.value) || 7 === parseInt(props.row.STATUS.value)">
                             <option v-for="status in statuses" :value="status.value"
-                                :disabled="parseInt(status.value) <= parseInt(props.row.STATUS.value)"
+                                :disabled="parseInt(status.value) !== parseInt(props.row.STATUS.value) + 1"
                                 :selected="parseInt(status.value) === parseInt(props.row.STATUS.value)">
                                 {{ status.label }}
                             </option>
@@ -330,12 +332,13 @@ const columns = [
     { name: 'client', align: 'center', label: 'Tên tài khoản', field: 'client' },
     { name: 'orderTime', align: 'center', label: 'Thời gian đặt', field: 'orderTime', sortable: true, },
     { name: 'method', label: 'Phương thức', field: 'method' },
-    { name: 'shipPrice', label: 'Phí vận chuyển', field: 'shipPrice' },
+    { name: 'sum', label: 'Tổng tiền', field: 'sum' },
     { name: 'status', align: 'center', label: 'Trạng thái', field: 'status' },
     { name: 'admin', align: 'center', label: "Người duyệt", field: "admin" },
     { name: '', label: '' },
 ]
 
+const filterStatus = ref([])
 const rows = ref([])
 const loading = ref(true)
 const filter = ref('')
@@ -368,23 +371,29 @@ const statuses = [
     {
         label: "Đã hoàn thành",
         value: 6
+    },
+    {
+        label: "Đã huỷ",
+        value: 7
     }
 ]
 function test(e) {
     console.log(e.target.value)
 }
-function getStatus(status) {
-    let result
-    switch (parseInt(status)) {
-        case 1:
-            result = 'Đã thanh toán'
-            break
-        case 0:
-            result = 'Chưa thanh toán'
-            break
+
+const getAllOrder = computed(() => {
+    if (filterStatus.value.length) {
+        const filter = filterStatus.value.map(status => parseInt(status.value))
+        return rows.value.filter(row => filter.includes(parseInt(row.STATUS.value)))
+    } else {
+        return rows.value
     }
-    return result
+})
+function getStatus(value) {
+    const result = statuses.find(status => parseInt(status.value) === parseInt(value))
+    return result.label
 }
+
 function openDetail(e) {
     const id = e.currentTarget.id.split(' ')
     const orderId = id[0]
@@ -445,15 +454,20 @@ const fetchAPI = () => {
                 value: order.IS_APPROVE
             }
             const day = dayjs(order.ORDER_TIME).format('DD/MM/YYYY HH:mm:ss') // display
+            let sum = 0
+            order.order_details.forEach(orderDetail => {
+                sum += parseFloat(orderDetail.PRICE)
+            })
+            console.log()
             const result = {
                 "ORDER_ID": order.ORDER_ID,
                 "ADDRESS": address,
                 "CLIENT_NAME": order.CLIENT.USER_NAME,
                 "ORDER_TIME": day,
                 "METHOD": order.METHOD,
-                "SHIP_PRICE": order.SHIP_PRICE,
+                "SUM": parseFloat(sum) + parseFloat(order.SHIP_PRICE),
                 "STATUS": status,
-                "IS_APPROVE": approve
+                "EMPLOYEE": order.EMPLOYEE,
             }
             return result
         })
@@ -530,9 +544,7 @@ function filterProduct(rows) {
                 return true
             } else if (order.SHIP_PRICE && order.SHIP_PRICE.toLowerCase().includes(lowercaseFilter)) {
                 return true
-            } else if (order.IS_APPROVE && order.IS_APPROVE.label.toLowerCase().includes(lowercaseFilter)) {
-                return true
-            } else if (order.STATUS && order.STATUS.toLowerCase().includes(lowercaseFilter)) {
+            } else if (order.STATUS && order.STATUS.label.toLowerCase().includes(lowercaseFilter)) {
                 return true
             }
         })
@@ -549,6 +561,7 @@ function handleChangeSelect(e) {
     )
         .then(res => {
             fetchAPI()
+            toast.success("Cập nhật thành công!", { theme: 'colored' })
         })
 }
 </script>

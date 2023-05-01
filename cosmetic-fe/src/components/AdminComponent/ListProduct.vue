@@ -20,21 +20,21 @@
               </div>
 
               <q-input outlined type="number" v-model="quantityCreate" label="Số lượng *" lazy-rules :rules="[
-                val => val !== null && val !== '' || 'Số lượng không được để trống',
-                val => val > 0 || 'Số lượng phải lớn hơn 0'
-              ]" />
+                  val => val !== null && val !== '' || 'Số lượng không được để trống',
+                  val => val > 0 || 'Số lượng phải lớn hơn 0'
+                ]" />
 
               <q-input outlined type="number" v-model="priceCreate" label="Giá *(VNĐ)" lazy-rules :rules="[
-                val => val !== null && val !== '' || 'Please type something',
-                val => val > 0 || 'Giá phải lớn hơn 0'
-              ]" />
+                  val => val !== null && val !== '' || 'Please type something',
+                  val => val > 0 || 'Giá phải lớn hơn 0'
+                ]" />
 
               <div class="row justify-between no-wrap" style="gap: 5px">
                 <div class="col-6">
                   <q-input outlined type="number" v-model="capacityCreate" hint="Dung tích" label="Dung tích" lazy-rules
                     :rules="[
-                      val => val > 0 || 'Dung tích phải lớn hơn 0'
-                    ]" />
+                        val => val > 0 || 'Dung tích phải lớn hơn 0'
+                      ]" />
                 </div>
                 <div class="col-6">
                   <q-select outlined v-model="currentUnitSelected" :options="unit" label="Đơn vị" />
@@ -97,21 +97,21 @@
               </div>
 
               <q-input outlined type="number" v-model="quantityEdit" label="Số lượng *" lazy-rules :rules="[
-                val => val !== null && val !== '' || 'Số lượng không được để trống',
-                val => val > 0 || 'Số lượng phải lớn hơn 0'
-              ]" />
+                  val => val !== null && val !== '' || 'Số lượng không được để trống',
+                  val => val > 0 || 'Số lượng phải lớn hơn 0'
+                ]" />
 
               <q-input outlined type="number" v-model="priceEdit" label="Giá *(VNĐ)" lazy-rules :rules="[
-                val => val !== null && val !== '' || 'Please type something',
-                val => val > 0 || 'Giá phải lớn hơn 0'
-              ]" />
+                  val => val !== null && val !== '' || 'Please type something',
+                  val => val > 0 || 'Giá phải lớn hơn 0'
+                ]" />
 
               <div class="row justify-between no-wrap" style="gap: 5px">
                 <div class="col-6">
                   <q-input outlined type="number" v-model="capacityEdit" hint="Dung tích" label="Dung tích" lazy-rules
                     :rules="[
-                      val => val > 0 || 'Dung tích phải lớn hơn 0'
-                    ]" />
+                        val => val > 0 || 'Dung tích phải lớn hơn 0'
+                      ]" />
                 </div>
                 <div class="col-6">
                   <q-select outlined v-model="currentUnitSelectedEdit" :options="unit" label="Đơn vị" />
@@ -153,9 +153,8 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
-    <q-dialog transition-show="slide-up" full-width transition-hide="slide-down" v-model="formDetail" v-if="formDetail"
-      persistent>
-      <q-card class="column full-height no-wrap">
+    <q-dialog class="admin-detail-product" transition-show="slide-up" transition-hide="slide-down" v-model="formDetail" v-if="formDetail" persistent>
+      <q-card class="column full-height no-wrap" style="width: 700px; max-width: 80vw;">
         <q-bar class="bg-primary">
           <q-space />
           <q-btn dense flat icon="close" v-close-popup>
@@ -175,7 +174,8 @@
               </q-field>
               <q-field outlined label="Thể lo" stack-label :dense="dense">
                 <template v-slot:control>
-                  <div class="self-center full-width no-outline" tabindex="0">{{ currentCategoriesSelectedEdit[0].label }}
+                  <div class="self-center full-width no-outline" tabindex="0">
+                    {{ currentCategoriesSelectedEdit[0] && currentCategoriesSelectedEdit[0].label }}
                   </div>
                 </template>
               </q-field>
@@ -213,49 +213,46 @@
                   </q-field>
                 </div>
               </div>
-              <q-field outlined label="Nhà cung cấp" stack-label :dense="dense">
-                <template v-slot:control>
-                  <div class="self-center full-width no-outline" tabindex="0">{{ currentProviderSelectedEdit.label }}
-                  </div>
-                </template>
-              </q-field>
-              <q-field outlined label="Ảnh đại diện" stack-label :dense="dense">
-                <template v-slot:control>
-                  <q-img :src="getImageEditUrl" v-if="getImageEditUrl !== null" spinner-color="white"
-                    style="height: 150px; max-width: 150px">
-                    <template v-slot:loading>
-                      <div class="text-subtitle1 text-white">
-                        Loading...
-                      </div>
-                    </template>
-                  </q-img>
-                </template>
-              </q-field>
-              <q-field outlined label="Ảnh của sản phẩm" stack-label :dense="dense">
-                <template v-slot:control>
-                    <q-img v-for="imgUrl in getImagesEditUrl" :src="imgUrl" style="height: 150px; max-width: 150px">
+              <div class="column wrap">
+                <q-field outlined label="Nhà cung cấp" stack-label :dense="dense">
+                  <template v-slot:control>
+                    <div class="self-center full-width no-outline" tabindex="0">{{ currentProviderSelectedEdit.label }}
+                    </div>
+                  </template>
+                </q-field>
+                <q-field outlined label="Ảnh đại diện" stack-label :dense="dense">
+                  <template v-slot:control>
+                    <q-img :src="getImageEditUrl" v-if="getImageEditUrl !== null" spinner-color="white"
+                      style="height: 150px; max-width: 150px" fit>
                       <template v-slot:loading>
                         <div class="text-subtitle1 text-white">
                           Loading...
                         </div>
                       </template>
                     </q-img>
-                </template>
-              </q-field>
-              <q-field outlined label="Mô tả" stack-label :dense="dense">
-                <template v-slot:control>
-                  <div class="self-center full-width no-outline" tabindex="0">{{ descriptionEdit }}
-                  </div>
-                </template>
-              </q-field>
+                  </template>
+                </q-field>
+                <div class="q-pa-md">
+                  <q-carousel padding swipeable animated v-model="slide" thumbnails infinite dark>
+                    <q-carousel-slide style="background-size: contain; background-repeat: no-repeat;"
+                      v-for="imgUrl in getImagesEditUrl" :name="imgUrl" :img-src="imgUrl" />
+                  </q-carousel>
+                </div>
+                <q-field outlined label="Mô tả" stack-label :dense="dense">
+                  <template v-slot:control>
+                    <div class="self-center full-width no-outline" tabindex="0">{{ descriptionEdit }}
+                    </div>
+                  </template>
+                </q-field>
+              </div>
             </div>
           </q-form>
         </q-card-section>
       </q-card>
     </q-dialog>
     <!-- row-key (tr) lay trong row => la ten cua row nha -->
-    <q-table title="Treats" selection="multiple" v-model:selected="selected" :rows="rows" :columns="columns"
-      row-key="COSMETIC_ID" :loading="loading" :filter="filter" :filter-method="filterProduct"
+    <q-table class="admin-table" title="Treats" selection="multiple" v-model:selected="selected" :rows="rows"
+      :columns="columns" row-key="COSMETIC_ID" :loading="loading" :filter="filter" :filter-method="filterProduct"
       no-data-label="I didn't find anything for you" no-results-label="The filter didn't uncover any results"
       separator="cell">
       <template v-slot:top>
@@ -284,6 +281,9 @@
             <q-checkbox v-model="props.selected" />
           </q-td>
           <!-- value in row -->
+          <q-td key="image" :props="props">
+            <q-img :src="props.row.IMAGE.IMAGE_URL" width="60px" height="60px" fit />
+          </q-td>
           <q-td key="name" :props="props">
             {{ props.row.COSMETIC_NAME }}
           </q-td>
@@ -305,7 +305,7 @@
           <q-td>
             <q-icon @click="openEditForm" :id="props.row.COSMETIC_ID + ' edit'" name="edit" style="cursor: pointer;"
               :props="props" />
-              |
+            |
             <q-icon @click="openDetailForm" :id="props.row.COSMETIC_ID + ' detail'" name="preview"
               style="cursor: pointer;" :props="props" />
           </q-td>
@@ -382,7 +382,6 @@
     </q-table>
   </div>
 </template>
-  
 <script setup>
 import { ref, watch, onMounted, computed } from 'vue'
 import { exportFile, useQuasar } from 'quasar'
@@ -395,6 +394,7 @@ const $q = useQuasar()
 
 
 const columns = [
+  { name: 'image', label: 'Hình đại diện', field: 'image' },
   { name: 'name', align: 'center', label: 'Tên mỹ phẩm', field: 'name' },
   { name: 'quantity', label: 'Số lượng', field: 'quantity' },
   { name: 'price', label: 'Giá', field: 'price' },
@@ -422,6 +422,7 @@ const descriptionCreate = ref(null)
 const fileCreate = ref(null)
 const filesCreate = ref(null)
 let allCategory = []
+const slide = ref('')
 
 const formEdit = ref(false)
 const currentProduct = ref(null)
@@ -548,69 +549,68 @@ function openEditForm(e) {
   const id = e.currentTarget.id.split(' ')
   const productId = id[0]
   const product = _.find(products.value, product => parseInt(product.COSMETIC_ID) === parseInt(productId))
-  if (!currentProduct.value) {
-    currentProduct.value = product
-    currentProviderSelectedEdit.value = {
-      value: product.PROVIDER.PROVIDER_ID,
-      label: product.PROVIDER.PROVIDER_NAME
-    }
-    nameEdit.value = product.COSMETIC_NAME
-    capacityEdit.value = product.CAPACITY
-    currentUnitSelectedEdit.value = product.UNIT
-    descriptionEdit.value = product.DESCRIPTION
-    priceEdit.value = product.PRICE
-    quantityEdit.value = product.QUANTITY
-    let categoryIds = []
-    product.CATEGORY_DETAIL_ID_category_detail_cosmetic_categories.forEach(categoryDetail => {
-      const categoryFound = categoryIds.find(category => parseInt(category.value) === parseInt(categoryDetail.CATEGORY.CATEGORY_ID))
-      if (!categoryFound) {
-        categoryIds.push({
-          value: categoryDetail.CATEGORY.CATEGORY_ID,
-          label: categoryDetail.CATEGORY.CATEGORY_NAME
-        })
-      }
-    })
-    currentCategoriesSelectedEdit.value = categoryIds
-    const categoryDetailIds = product.CATEGORY_DETAIL_ID_category_detail_cosmetic_categories.map(categoryDetail => {
-      return categoryDetail.CATEGORY_DETAIL_ID
-    })
-    categoryDetailsSelectedEdit.value = categoryDetailIds
+  currentProduct.value = product
+  currentProviderSelectedEdit.value = {
+    value: product.PROVIDER.PROVIDER_ID,
+    label: product.PROVIDER.PROVIDER_NAME
   }
+  nameEdit.value = product.COSMETIC_NAME
+  capacityEdit.value = product.CAPACITY
+  currentUnitSelectedEdit.value = product.UNIT
+  descriptionEdit.value = product.DESCRIPTION
+  priceEdit.value = product.PRICE
+  quantityEdit.value = product.QUANTITY
+  let categoryIds = []
+  product.CATEGORY_DETAIL_ID_category_detail_cosmetic_categories.forEach(categoryDetail => {
+    const categoryFound = categoryIds.find(category => parseInt(category.value) === parseInt(categoryDetail.CATEGORY.CATEGORY_ID))
+    if (!categoryFound) {
+      categoryIds.push({
+        value: categoryDetail.CATEGORY.CATEGORY_ID,
+        label: categoryDetail.CATEGORY.CATEGORY_NAME
+      })
+    }
+  })
+  currentCategoriesSelectedEdit.value = categoryIds
+  const categoryDetailIds = product.CATEGORY_DETAIL_ID_category_detail_cosmetic_categories.map(categoryDetail => {
+    return categoryDetail.CATEGORY_DETAIL_ID
+  })
+  categoryDetailsSelectedEdit.value = categoryDetailIds
+
   formEdit.value = true
 }
 
 function openDetailForm(e) {
   const id = e.currentTarget.id.split(' ')
   const productId = id[0]
-  if (!currentProduct.value) {
-    const product = _.find(products.value, product => parseInt(product.COSMETIC_ID) === parseInt(productId))
-    currentProduct.value = product
-    currentProviderSelectedEdit.value = {
-      value: product.PROVIDER.PROVIDER_ID,
-      label: product.PROVIDER.PROVIDER_NAME
-    }
-    nameEdit.value = product.COSMETIC_NAME
-    capacityEdit.value = product.CAPACITY
-    currentUnitSelectedEdit.value = product.UNIT
-    descriptionEdit.value = product.DESCRIPTION
-    priceEdit.value = product.PRICE
-    quantityEdit.value = product.QUANTITY
-    let categoryIds = []
-    product.CATEGORY_DETAIL_ID_category_detail_cosmetic_categories.forEach(categoryDetail => {
-      const categoryFound = categoryIds.find(category => parseInt(category.value) === parseInt(categoryDetail.CATEGORY.CATEGORY_ID))
-      if (!categoryFound) {
-        categoryIds.push({
-          value: categoryDetail.CATEGORY.CATEGORY_ID,
-          label: categoryDetail.CATEGORY.CATEGORY_NAME
-        })
-      }
-    })
-    currentCategoriesSelectedEdit.value = categoryIds
-    const categoryDetailIds = product.CATEGORY_DETAIL_ID_category_detail_cosmetic_categories.map(categoryDetail => {
-      return categoryDetail.CATEGORY_DETAIL_ID
-    })
-    categoryDetailsSelectedEdit.value = categoryDetailIds
+  const product = _.find(products.value, product => parseInt(product.COSMETIC_ID) === parseInt(productId))
+  currentProduct.value = product
+
+  currentProviderSelectedEdit.value = {
+    value: product.PROVIDER.PROVIDER_ID,
+    label: product.PROVIDER.PROVIDER_NAME
   }
+  nameEdit.value = product.COSMETIC_NAME
+  capacityEdit.value = product.CAPACITY
+  currentUnitSelectedEdit.value = product.UNIT
+  descriptionEdit.value = product.DESCRIPTION
+  priceEdit.value = product.PRICE
+  quantityEdit.value = product.QUANTITY
+  let categoryIds = []
+  product.CATEGORY_DETAIL_ID_category_detail_cosmetic_categories.forEach(categoryDetail => {
+    const categoryFound = categoryIds.find(category => parseInt(category.value) === parseInt(categoryDetail.CATEGORY.CATEGORY_ID))
+    if (!categoryFound) {
+      categoryIds.push({
+        value: categoryDetail.CATEGORY.CATEGORY_ID,
+        label: categoryDetail.CATEGORY.CATEGORY_NAME
+      })
+    }
+  })
+  currentCategoriesSelectedEdit.value = categoryIds
+  const categoryDetailIds = product.CATEGORY_DETAIL_ID_category_detail_cosmetic_categories.map(categoryDetail => {
+    return categoryDetail.CATEGORY_DETAIL_ID
+  })
+  slide.value = product.images[0].IMAGE_URL
+  categoryDetailsSelectedEdit.value = categoryDetailIds
   formDetail.value = true
 }
 
@@ -678,6 +678,7 @@ function saveEdit() {
   formData.append('providerId', currentProviderSelectedEdit.value.value)
   formData.append('description', descriptionEdit.value)
   formData.append('price', priceEdit.value)
+  console.log(fileEdit.value)
   formData.append('avatar', fileEdit.value)
   if (filesEdit.value) {
     const files = Array.from(filesEdit.value)
@@ -854,4 +855,12 @@ function filterProduct(rows) {
 //  const columns = ref(columns),
 //  const rows = ref(rows) 
 </script>
+<style>
+.admin-table thead{
+  background-color: #1976D2;
+}
+.admin-detail-product .scroll {
+  overflow: hidden;
+}
+</style>
   

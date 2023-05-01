@@ -1,54 +1,63 @@
-<script setup>
-import { reactive, watch, nextTick, computed, ref } from 'vue'
-import { onMounted } from 'vue'
-import { RouterLink, useRoute, useRouter } from 'vue-router'
-import AuthenticationAPI from '../api/LoginAPI/AuthenticationAPI';
-import OrderHistoriesView from '../views/OrderHistoriesView.vue';
-import VNDCurrencyFormatter from '../util/VNDCurrencyFormatter';
-const router = useRouter()
-const route = useRoute()
-const orders = ref([])
-onMounted(() => {
-    AuthenticationAPI.getOrders()
-        .then(res => {
-            console.log(res.data)
-            orders.value = res.data
-        })
-})
-function getAddress(data) {
-    const result = data.ADDRESS_DETAIL + ',  ' + data.VILLAGE.VILLAGE_NAME + ',  ' + data.VILLAGE.DISTRICT.DISTRICT_NAME + ',  ' + data.VILLAGE.DISTRICT.PROVINCE.PROVINCE_NAME;
-    return result;
-}
-function getStatus(status) {
-    let result
-    switch (parseInt(status)) {
-        case 0:
-            result = 'Chưa duyệt'
-            break
-        case 1:
-            result = 'Đã duyệt'
-            break
-        case 2:
-            result = 'Đã thanh toán'
-            break
-        case 3:
-            result = 'Chưa thanh toán'
-            break
-    }
-    return result
-}
-function getSumPrice(order) {
-    let sumprice = 0
-    const orderdetails = order.order_details || []
-    if (orderdetails.length) {
-        orderdetails.forEach(orderDetail => {
-            sumprice += parseInt(orderDetail.QUANTITY) * parseFloat(orderDetail.PRICE)
-        })
-    }
-    return sumprice + parseFloat(order.SHIP_PRICE)
-}
-</script>
 <template>
+    <q-dialog v-model="ratingForm" persistent>
+        <div class="q-pa-md" style="width: 400px; max-width: 80vw;background-color: white;">
+            <q-form class="q-gutter-md">
+                <div class="column" v-for="(orderDetail, index) in currentOrder.order_details">
+                    <q-item clickable v-ripple>
+                        <q-item-section side>
+                            <q-avatar rounded size="48px">
+                                <img :src="orderDetail.COSMETIC.IMAGE.IMAGE_URL" />
+                            </q-avatar>
+                        </q-item-section>
+                        <q-item-section>
+                            <q-item-label>{{ orderDetail.COSMETIC.COSMETIC_NAME }}</q-item-label>
+                            <q-item-label caption>{{ 'x' + orderDetail.QUANTITY }}</q-item-label>
+                        </q-item-section>
+                    </q-item>
+                    <q-input v-model="comment[index]" filled autogrow aria-placeholder="Bình luận" label="Bình luận" />
+                    <q-rating v-model="ratingModel[index]" size="3.5em" color="yellow" icon="star_border"
+                        icon-selected="star" />
+                    <q-separator />
+                </div>
+                <div>
+                    <q-btn label="Gửi" type="button" color="primary" @click="handleRating" />
+                    <q-btn label="Huỷ bỏ" type="button" color="primary" flat class="q-ml-sm" v-close-popup />
+                </div>
+            </q-form>
+        </div>
+    </q-dialog>
+    <q-dialog v-model="detailPreviewForm">
+        <div class="q-pa-md" style="width: 400px; max-width: 80vw;background-color: white;">
+            <q-form class="q-gutter-md">
+                <div class="column" v-for="(orderDetail, index) in currentOrder.order_details">
+                    <q-item v-ripple>
+                        <q-item-section side>
+                            <q-avatar rounded size="48px">
+                                <img :src="orderDetail.COSMETIC.IMAGE.IMAGE_URL" />
+                            </q-avatar>
+                        </q-item-section>
+                        <q-item-section>
+                            <q-item-label>{{ orderDetail.COSMETIC.COSMETIC_NAME }}</q-item-label>
+                            <q-item-label caption>{{ 'x' + orderDetail.QUANTITY }}</q-item-label>
+                        </q-item-section>
+                        <q-item-section side top>
+                            <q-item-label caption>{{ dayjs(currentOrder.reviews[index].CREATED_AT).fromNow()
+                            }}</q-item-label>
+                        </q-item-section>
+                    </q-item>
+                    <q-field outlined label="Bình luận" stack-label :dense="dense">
+                        <template v-slot:control>
+                            <div class="self-center full-width no-outline" tabindex="0">{{
+                                currentOrder.reviews[index].COMMENT }}</div>
+                        </template>
+                    </q-field>
+                    <q-rating disable v-model="currentOrder.reviews[index].SCORE" size="3.5em" color="yellow"
+                        icon="star_border" icon-selected="star" />
+                    <q-separator />
+                </div>
+            </q-form>
+        </div>
+    </q-dialog>
     <div class='change-userinfo-form-right-container order-history'>
         <div class='title'>
             Đơn hàng của bạn
@@ -90,7 +99,6 @@ function getSumPrice(order) {
                     </div>
                 </div>
 
-
                 <div class='order-detail' v-for="orderDetail in order.order_details">
                     <div class='product-info'>
                         <div class='product-img'>
@@ -106,7 +114,7 @@ function getSumPrice(order) {
                             Giá: {{ VNDCurrencyFormatter.formatToVND(orderDetail.PRICE) }}
                         </div>
                     </div>
-
+                    <q-separator />
                 </div>
                 <div class='price-info'>
                     <div class='ship-price'>
@@ -124,12 +132,162 @@ function getSumPrice(order) {
                         <label class="thanhtien">
                             {{ VNDCurrencyFormatter.formatToVND(getSumPrice(order)) }}
                         </label>
+                        <q-space></q-space>
+
+                        <q-btn color="red" v-if="parseInt(order.STATUS) === 6 && !order.reviews.length"
+                            :id="order.ORDER_ID + ' review'" @click="openReviewForm">
+                            Đánh giá
+                            <template v-slot:loading>
+                                Loading...
+                            </template>
+                        </q-btn>
+
+                        <q-btn color="red" v-else-if="order.reviews.length" :id="order.ORDER_ID + ' detai-review'"
+                            @click="detailPreview">
+                            Xem đánh giá
+                            <template v-slot:loading>
+                                Loading...
+                            </template>
+                        </q-btn>
+
+                        <q-btn color="red" v-else :disable="parseInt(order.STATUS) !== 1" :id="order.ORDER_ID + ' order'"
+                            @click="updateStatus">
+                            Huỷ đơn
+                            <template v-slot:loading>
+                                Loading...
+                            </template>
+                        </q-btn>
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 </template>
+<script setup>
+import { reactive, watch, nextTick, computed, ref } from 'vue'
+import { onMounted } from 'vue'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
+import AuthenticationAPI from '../api/LoginAPI/AuthenticationAPI';
+import OrderHistoriesView from '../views/OrderHistoriesView.vue';
+import VNDCurrencyFormatter from '../util/VNDCurrencyFormatter';
+import OrderAPI from '../api/OrderAPI/OrderAPI';
+import RatingAPI from '../api/RatingAPI/RatingAPI'
+import { toast } from 'vue3-toastify'
+import 'vue3-toastify/dist/index.css'
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+
+dayjs.extend(relativeTime)
+const router = useRouter()
+const route = useRoute()
+const orders = ref([])
+const ratingForm = ref(false)
+const detailPreviewForm = ref(false)
+const ratingModel = ref([])
+const comment = ref([])
+const currentOrder = ref(null)
+onMounted(() => {
+    AuthenticationAPI.getOrders()
+        .then(res => {
+            console.log(res.data)
+            orders.value = res.data
+        })
+})
+function getAddress(data) {
+    const result = data.ADDRESS_DETAIL + ',  ' + data.VILLAGE.VILLAGE_NAME + ',  ' + data.VILLAGE.DISTRICT.DISTRICT_NAME + ',  ' + data.VILLAGE.DISTRICT.PROVINCE.PROVINCE_NAME;
+    return result;
+}
+const statuses = [
+    {
+        label: "Chưa duyệt",
+        value: 1
+    },
+    {
+        label: "Đã duyệt",
+        value: 2
+    },
+    {
+        label: "Đã thanh toán",
+        value: 3
+    },
+    {
+        label: "Đang chuẩn bị hàng",
+        value: 4
+    },
+    {
+        label: "Đang giao",
+        value: 5
+    },
+    {
+        label: "Đã hoàn thành",
+        value: 6
+    },
+    {
+        label: "Đã huỷ",
+        value: 7
+    }
+]
+function getStatus(value) {
+    const result = statuses.find(status => parseInt(status.value) === parseInt(value))
+    return result.label
+}
+function getSumPrice(order) {
+    let sumprice = 0
+    const orderdetails = order.order_details || []
+    if (orderdetails.length) {
+        orderdetails.forEach(orderDetail => {
+            sumprice += parseInt(orderDetail.QUANTITY) * parseFloat(orderDetail.PRICE)
+        })
+    }
+    return sumprice + parseFloat(order.SHIP_PRICE)
+}
+function updateStatus(e) {
+    const orderId = e.currentTarget.id.split(' ')[0]
+    OrderAPI.updateStatus(
+        { orderId, status: 7 }
+    )
+        .then(res => {
+            AuthenticationAPI.getOrders()
+                .then(res => {
+                    orders.value = res.data
+                })
+            toast.success("Cập nhật thành công!", { theme: 'colored' })
+        })
+}
+function openReviewForm(e) {
+    ratingForm.value = true
+    const orderFound = orders.value.find(order => parseInt(order.ORDER_ID) === parseInt(e.currentTarget.id.split(' ')[0]))
+    currentOrder.value = orderFound
+}
+function detailPreview(e) {
+    detailPreviewForm.value = true
+    const orderFound = orders.value.find(order => parseInt(order.ORDER_ID) === parseInt(e.currentTarget.id.split(' ')[0]))
+    currentOrder.value = orderFound
+}
+function handleRating() {
+    let data = []
+    currentOrder.value.order_details.forEach((orderDetail, index) => {
+        data.push({
+            COSMETIC_ID: orderDetail.COSMETIC_ID,
+            ORDER_ID: currentOrder.value.ORDER_ID,
+            SCORE: ratingModel.value[index],
+            COMMENT: comment.value[index]
+        })
+    })
+    RatingAPI.rating(data)
+        .then((res => {
+            currentOrder.value = null
+            ratingForm.value = false
+            AuthenticationAPI.getOrders()
+                .then(res => {
+                    orders.value = res.data
+                })
+            toast.success("Đánh giá thành công!", { theme: 'colored' })
+        }))
+}
+</script>
+
 <style scoped>
 .order-history {
     overflow-x: hidden;
@@ -169,6 +327,7 @@ function getSumPrice(order) {
 
 .order-history-content .order-container {
     box-shadow: 0 4px 20px 1px rgb(0 0 0 / 6%), 0 1px 4px rgb(0 0 0 / 8%);
+    padding-bottom: 15px;
 }
 
 .order-history-content .order-container .btn {
@@ -206,13 +365,18 @@ function getSumPrice(order) {
     align-items: center;
 }
 
-.order-history-content .order-container .order-info .group-2 .order-content {
-    
+.order-history-content .order-container .order-info .group-2 .order-title {
+    font-size: 13.5px;
+    color: rgb(131, 128, 128);
 }
+
+.order-history-content .order-container .order-info .group-2 .order-content {}
+
 .order-history-content .order-container .order-info .group-2 .status {
     color: red;
     text-transform: uppercase;
 }
+
 .order-history-content .order-container .order-detail {
     display: flex;
     flex-direction: column;
@@ -256,6 +420,7 @@ function getSumPrice(order) {
     justify-content: flex-end;
     align-items: center;
 }
+
 .order-history-content .order-container .price-info .sum-price .thanhtien {
     font-size: 24px;
     color: red;

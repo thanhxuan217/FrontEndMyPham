@@ -227,7 +227,7 @@
       </q-card>
     </q-dialog>
     <!-- row-key (tr) lay trong row => la ten cua row nha -->
-    <q-table title="Treats" selection="multiple" v-model:selected="selected" :rows="rows" :columns="columns"
+    <q-table class="admin-table" title="Treats" selection="multiple" v-model:selected="selected" :rows="rows" :columns="columns"
       row-key="CLIENT_ID" :loading="loading" :filter="filter" :filter-method="filterProduct"
       no-data-label="I didn't find anything for you" no-results-label="The filter didn't uncover any results"
       separator="cell">

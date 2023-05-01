@@ -13,6 +13,10 @@ import ProductAPI from '../api/ProductAPI/ProductAPI'
 import VNDCurrencyFormatter from '../util/VNDCurrencyFormatter'
 import { useCartStore } from '../store/cartStore'
 import DiscountDetail from './DiscountDetail.vue'
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+
+dayjs.extend(relativeTime)
 
 const cartStore = useCartStore()
 const router = useRouter()
@@ -212,15 +216,30 @@ const getAllDiscountIsNot0Condition = computed(() => {
                 <div class='title'>
                     Đánh giá
                 </div>
+                <q-separator vertical/>
                 <div class='content'>
-                    <div class='content-detail'>
-                        <div class='content-detail-title'>
-                            Very good
-                        </div>
-                        <div>
+                    <q-item v-for="review in product.reviews">
+                        <q-item-section top avatar>
+                            <q-avatar rounded>
+                                <img :src="review.CLIENT.IMAGE.IMAGE_URL">
+                            </q-avatar>
+                        </q-item-section>
 
-                        </div>
-                    </div>
+                        <q-item-section>
+                            <q-item-label>{{ review.CLIENT.CLIENT_NAME }}</q-item-label>
+                            <q-item-label caption>{{ review.COMMENT }}</q-item-label>
+                        </q-item-section>
+
+                        <q-item-section side top>
+                            <q-item-label caption>
+                                {{ dayjs(review.CREATED_AT).fromNow() }}
+                            </q-item-label>
+                            <div class="row">
+                                <q-icon name="star" color="yellow" v-for="score in review.SCORE" />
+                            </div>
+                        </q-item-section>
+                    </q-item>
+
                 </div>
             </div>
         </div>
@@ -272,11 +291,13 @@ const getAllDiscountIsNot0Condition = computed(() => {
     height: 600px;
     border: 1px solid rgb(207, 205, 205);
 }
+
 .discount-view {
     display: flex;
     align-items: center;
     gap: 10px
 }
+
 .product-detail .product-detail-content .target-img img {
     width: auto;
     max-width: 600px;

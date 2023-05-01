@@ -1,21 +1,39 @@
 <script setup>
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { ref, computed, onMounted } from 'vue'
+import AccountAPI from '../api/AdminAPI/AccountAPI'
 const router = useRouter()
 const leftDrawerOpen = ref(false)
+const loading = ref(true)
+const user = ref(null)
 const pathName = ref('/admin')
 function toggleLeftDrawer() {
     leftDrawerOpen.value = !leftDrawerOpen.value
 }
 onMounted(() => {
-    if (localStorage.getItem('accessToken') === null) {
+    if (localStorage.getItem('accessToken').toString() === 'null') {
         router.push('/admin/login')
     }
-}) 
+    AccountAPI.getUser()
+        .then(res => {
+            loading.value = false
+            user.value = res.data
+        })
+        .catch(err => {
+            loading.value = false
+            router.push('/admin/login')
+        })
+    // check if is admin
+})
+function logout() {
+    localStorage.setItem("accessToken", null)
+    localStorage.setItem("refreshToken", null)
+    router.push("/admin/login")
+}
 </script>
 
 <template>
-    <q-layout view="hHh lpR fff" style="overflow-x: hidden;">
+    <q-layout view="hHh lpR fff" style="overflow-x: hidden;" v-if="!loading">
         <q-header reveal elevated class="bg-primary text-white">
             <q-toolbar>
                 <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
@@ -24,6 +42,9 @@ onMounted(() => {
                         Leo
                     </q-avatar>
                 </q-toolbar-title>
+                <div class="q-pa-md" style="padding-right: 30px;cursor: pointer;">
+                    <q-icon name="logout" style="font-size: 20px;" @click="logout" />
+                </div>
             </q-toolbar>
         </q-header>
 
@@ -67,7 +88,7 @@ onMounted(() => {
 
                     <q-expansion-item expand-separator active-class="my-menu-link" to='/admin/statictis'
                         :active="pathName === '/admin/statictis'" @click="pathName = '/admin/statictis'" icon="equalizer"
-                        label="Thống kê" default-opened :content-inset-level="1">
+                        label="Thống kê" default-opened :content-inset-level="1" v-if="user && user.isAdmin">
                         <q-list>
                             <q-item clickable v-ripple :active="pathName === '/admin/statictis'"
                                 @click="pathName = '/admin/statictis'" to='/admin/statictis' active-class="my-menu-link">
