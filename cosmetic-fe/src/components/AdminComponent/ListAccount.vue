@@ -15,7 +15,7 @@
         <q-card style="height: 358px;">
           <div class="q-pa-md">
             <div class="text-h6 q-mb-md">Thông tin người dùng</div>
-            <q-card class="my-card"  flat bordered style="width: auto;">
+            <q-card class="my-card" flat bordered style="width: auto;">
               <q-item>
                 <q-item-section avatar>
                   <q-avatar>
@@ -227,8 +227,8 @@
       </q-card>
     </q-dialog>
     <!-- row-key (tr) lay trong row => la ten cua row nha -->
-    <q-table class="admin-table" title="Treats" selection="multiple" v-model:selected="selected" :rows="rows" :columns="columns"
-      row-key="CLIENT_ID" :loading="loading" :filter="filter" :filter-method="filterProduct"
+    <q-table class="admin-table" title="Treats" selection="multiple" v-model:selected="selected" :rows="rows"
+      :columns="columns" row-key="CLIENT_ID" :loading="loading" :filter="filter" :filter-method="filterProduct"
       no-data-label="I didn't find anything for you" no-results-label="The filter didn't uncover any results"
       separator="cell">
       <template v-slot:top>
@@ -309,6 +309,36 @@ const columns = [
   { name: 'disable', label: 'Trạng thái', field: 'disable' },
   { name: 'edit', label: '' },
 ]
+const statuses = [
+  {
+    label: "Chưa duyệt",
+    value: 1
+  },
+  {
+    label: "Đã duyệt",
+    value: 2
+  },
+  {
+    label: "Đã thanh toán",
+    value: 3
+  },
+  {
+    label: "Đang chuẩn bị hàng",
+    value: 4
+  },
+  {
+    label: "Đang giao",
+    value: 5
+  },
+  {
+    label: "Đã hoàn thành",
+    value: 6
+  },
+  {
+    label: "Đã huỷ",
+    value: 7
+  }
+]
 
 const rows = ref([])
 const loading = ref(true)
@@ -329,17 +359,9 @@ onMounted(() => {
     })
 
 })
-function getStatus(status) {
-  let result
-  switch (parseInt(status)) {
-    case 0:
-      result = 'Đã thanh toán'
-      break
-    case 1:
-      result = 'Chưa thanh toán'
-      break
-  }
-  return result
+function getStatus(value) {
+  const result = statuses.find(status => parseInt(status.value) === parseInt(value))
+  return result.label
 }
 
 function getSumOrder(order) {

@@ -18,6 +18,7 @@ import ListAccountView from '../views/AdminView/ListAccountView.vue'
 import AdminLoginView from '../views/AdminView/LoginView.vue'
 import DiscountView from '../views/AdminView/DiscountView.vue'
 import LoginView from '../views/LoginView.vue'
+import ReceiveView from '../views/AdminView/ReceiveView.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -147,6 +148,14 @@ const router = createRouter({
           // which is lazy-loaded when the route is visited.
           component: DiscountView,
         },
+        {
+          path: 'receive',// root path
+          name: 'receive',
+          // route level code-splitting
+          // this generates a separate chunk (About.[hash].js) for this route
+          // which is lazy-loaded when the route is visited.
+          component: ReceiveView,
+        }
       ],
       meta: { layout: "admin" },
     },
