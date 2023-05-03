@@ -58,7 +58,41 @@
             </q-form>
         </div>
     </q-dialog>
-    <div class='change-userinfo-form-right-container order-history'>
+    <div class="q-pa-md">
+        <div class="q-gutter-y-md" style="width: 100%;">
+            <q-tabs bv-model="tab" shrink="false" narrow-indicator dense class="text-grey" active-color="primary"
+                indicator-color="primary" align="justify">
+                <q-tab name="tatca" label="Tất cả" />
+                <q-tab name="chuaduyet" label="Chưa duyệt" />
+                <q-tab name="daduyet" label="Đã duyệt" />
+                <q-tab name="dathanhtoan" label="Đã thanh toán" />
+                <q-tab name="dangchuanbihang" label="Đang chuẩn bị hàng" />
+                <q-tab name="danggiao" label="Đang giao" />
+                <q-tab name="dahoanthanh" label="Đã hoàn thành" />
+                <q-tab name="dahuy" label="Đã huỷ" />
+            </q-tabs>
+
+            <q-separator />
+
+            <q-tab-panels v-model="tab" animated>
+                <q-tab-panel name="tatca">
+                    <div class="text-h6">Mails</div>
+                    Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                </q-tab-panel>
+
+                <q-tab-panel name="chuaduyet">
+                    <div class="text-h6">Alarms</div>
+                    Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                </q-tab-panel>
+
+                <q-tab-panel name="daduyet">
+                    <div class="text-h6">Movies</div>
+                    Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                </q-tab-panel>
+            </q-tab-panels>
+        </div>
+    </div>
+    <!-- <div class='change-userinfo-form-right-container order-history'>
         <div class='title'>
             Đơn hàng của bạn
         </div>
@@ -162,7 +196,7 @@
             </div>
 
         </div>
-    </div>
+    </div> -->
 </template>
 <script setup>
 import { reactive, watch, nextTick, computed, ref } from 'vue'
@@ -181,6 +215,7 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 dayjs.extend(relativeTime)
 const router = useRouter()
 const route = useRoute()
+const tab = ref('all')
 const orders = ref([])
 const ratingForm = ref(false)
 const detailPreviewForm = ref(false)

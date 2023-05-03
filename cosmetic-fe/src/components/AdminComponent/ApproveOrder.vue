@@ -214,14 +214,27 @@
                 </q-card-section>
             </q-card>
         </q-dialog>
+        <q-tabs v-model="tab" narrow-indicator dense class="text-grey" active-color="primary" indicator-color="primary"
+            align="justify">
+            <q-tab name="0" label="Tất cả" />
+            <q-tab name="1" label="Chưa duyệt" />
+            <q-tab name="2" label="Đã duyệt" />
+            <q-tab name="3" label="Đã thanh toán" />
+            <q-tab name="4" label="Đang chuẩn bị hàng" />
+            <q-tab name="5" label="Đang giao" />
+            <q-tab name="6" label="Đã hoàn thành" />
+            <q-tab name="7" label="Đã huỷ" />
+        </q-tabs>
+        <q-separator />
         <!-- row-key (tr) lay trong row => la ten cua row nha -->
-        <q-table class="admin-table" title="Danh sách đơn hàng" :rows="getAllOrder" :columns="columns" row-key="ORDER_ID"
+        <q-table :key="Math.floor(Math.random() * 10) + 1" selection="multiple" v-model:selected="selected"
+            class="admin-table" title="Danh sách đơn hàng" :rows="rows" :columns="columns" row-key="ORDER_ID"
             :loading="loading" :filter="filter" :filter-method="filterProduct"
             no-data-label="I didn't find anything for you" no-results-label="The filter didn't uncover any results"
             separator="cell">
             <template v-slot:top>
                 <div class="row items-center" style="justify-content: space-between;width: 100%;">
-                    <div style="min-width: 250px; max-width: 300px">
+                    <!-- <div style="min-width: 250px; max-width: 300px">
                         <q-badge color="secondary" class="q-mb-md">
                             Lọc theo trạng thái:
                         </q-badge>
@@ -230,6 +243,9 @@
                                 <q-icon name="filter_alt" />
                             </template>
                         </q-select>
+                    </div> -->
+                    <div style="min-width: 250px; max-width: 300px">
+                        <q-btn color="primary" :disable="loading" label="Duyệt" @click="approve" />
                     </div>
                     <!-- <q-btn color="primary" :disable="loading" label="Duyệt" @click="approve" />
                 <q-btn class="q-ml-sm" color="negative" :disable="loading" @click="reject" label="Từ chối" />
@@ -253,6 +269,7 @@
             <!-- this is props from table -->
             <template v-slot:header>
                 <q-tr>
+                    <q-th></q-th>
                     <q-th v-for="col in columns" :key="col.name">
                         {{ col.label }}
                     </q-th>
@@ -260,6 +277,10 @@
             </template>
             <template v-slot:body="props">
                 <q-tr :props="props">
+                    <q-td>
+                        <q-checkbox v-model="props.selected"
+                            :disable="6 === parseInt(props.row.STATUS.value) || 7 === parseInt(props.row.STATUS.value)" />
+                    </q-td>
                     <q-td key="id" :props="props">
                         {{ props.row.ORDER_ID }}
                     </q-td>
@@ -279,14 +300,15 @@
                         {{ VNDCurrencyFormatter.formatToVND(props.row.SUM) }}
                     </q-td>
                     <q-td key="status" :props="props">
-                        <select @change="handleChangeSelect" :id="props.row.ORDER_ID + ' select'" class="my-select"
+                        {{ props.row.STATUS.label }}
+                        <!-- <select @change="handleChangeSelect" :id="props.row.ORDER_ID + ' select'" class="my-select"
                             :disabled="6 === parseInt(props.row.STATUS.value) || 7 === parseInt(props.row.STATUS.value)">
                             <option v-for="status in statuses" :value="status.value"
                                 :disabled="parseInt(status.value) !== parseInt(props.row.STATUS.value) + 1"
                                 :selected="parseInt(status.value) === parseInt(props.row.STATUS.value)">
                                 {{ status.label }}
                             </option>
-                        </select>
+                        </select> -->
                         <!-- <q-select @input-value="handleChangeSelect"  outlined :model-value="props.row.STATUS" :options="statuses" label="Trạng thái"
                             :option-disable="opt => Object(opt) === opt ? parseInt(opt.value) <= parseInt(props.row.STATUS.value) : true" /> -->
                     </q-td>
@@ -350,6 +372,7 @@ const orders = ref([])
 const detail = ref(false)
 const currentOrderSelected = ref(null)
 const splitterModel = ref(70)
+const tab = ref("0")
 const statuses = [
     {
         label: "Chưa duyệt",
@@ -419,12 +442,18 @@ function test(e) {
     console.log(e.target.value)
 }
 
-const getAllOrder = computed(() => {
-    if (filterStatus.value.value === 0) {
-        return rows.value
-    }
-    return rows.value.filter(row => parseInt(filterStatus.value.value) === parseInt(row.STATUS.value))
+// const getAllOrder = computed(() => {
+//     if (parseInt(tab.value) === 0) {
+//         return rows.value
+//     }
+//     const result = rows.value.filter(row => parseInt(tab.value) === parseInt(row.STATUS.value))
+//     return result
+// })
+
+watch(tab, (newTab) => {
+    fetchAPI()
 })
+
 function getStatus(value) {
     const result = statuses.find(status => parseInt(status.value) === parseInt(value))
     return result.label
@@ -481,7 +510,7 @@ const fetchAPI = () => {
     loading.value = true
     OrderAPI.getAll().then(res => {
         orders.value = res.data
-        rows.value = _.map(res.data, order => {
+        const allRows = _.map(res.data, order => {
             const address = getAddress(order.ADDRESS)
             const status = statuses.find(status => parseInt(status.value) === parseInt(order.STATUS))
             const approve =
@@ -507,6 +536,15 @@ const fetchAPI = () => {
             }
             return result
         })
+        if (parseInt(tab.value) === 0) {
+            rows.value = allRows
+        } else {
+            console.log(tab.value)
+            console.log(allRows)
+            const result = allRows.filter(row => parseInt(tab.value) === parseInt(row.STATUS.value))
+            console.log(result)
+            rows.value = result
+        }
         loading.value = false
         selected.value = []
     }).catch(err => {
@@ -516,6 +554,7 @@ const fetchAPI = () => {
 onMounted(() => {
     fetchAPI()
 })
+
 function approve() {
     const orderIds = selected.value.map(item => item.ORDER_ID)
     if (orderIds.length === 0) {
@@ -524,24 +563,30 @@ function approve() {
     $q.dialog({
         dark: true,
         title: 'Xác nhận',
-        message: 'Bạn có chắc chắn từ chối các đơn này?',
+        message: 'Bạn có chắc chắn duyệt các đơn này?',
         cancel: true,
         persistent: true
     }).onOk(() => {
-        const data = {
-            orderIds,
-            isApprove: 1
-        }
-        OrderAPI.approve(data)
-            .then(() => {
-                fetchAPI()
+        OrderAPI.approve(orderIds)
+            .then(res => {
+                if (parseInt(tab.value) === 2) {
+                    tab.value = (parseInt(tab.value) + 2) + ""
+                } else if (parseInt(tab.value) !== 0) {
+                    tab.value = (parseInt(tab.value) + 1) + ""
+                }
             })
-
+        toast.success("Cập nhật thành công!", { theme: 'colored' })
+        // if (parseInt(tab.value) === 2) {
+        //     tab.value = (parseInt(tab.value) + 2) + ""
+        // } else if (parseInt(tab.value) !== 0) {
+        //     tab.value = (parseInt(tab.value) + 1) + ""
+        // }
     }).onCancel(() => {
     }).onDismiss(() => {
         // console.log('I am triggered on both OK and Cancel')
     })
 }
+
 function reject() {
     const orderIds = selected.value.map(item => item.ORDER_ID)
     if (orderIds.length === 0) {
