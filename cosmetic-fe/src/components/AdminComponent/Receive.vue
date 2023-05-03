@@ -65,8 +65,8 @@
         <q-card-section>
           <q-form class="q-gutter-md">
             <div class="column" style="gap: 10px">
-              <q-select disable filled v-model="currentProductEdit" :options="getProductOption" label="Chọn sản phẩm" color="teal"
-                clearable options-selected-class="text-deep-orange" outlined>
+              <q-select disable filled v-model="currentProductEdit" :options="getProductOption" label="Chọn sản phẩm"
+                color="teal" clearable options-selected-class="text-deep-orange" outlined>
                 <template v-slot:selected>
                   <q-chip v-if="currentProductEdit" dense square color="white" text-color="primary"
                     class="q-my-none q-ml-xs q-mr-none">
@@ -161,7 +161,7 @@
       </template>
       <template v-slot:no-data="{ icon, message, filter }">
         <div class="full-width row flex-center text-accent q-gutter-sm">
-          
+
         </div>
       </template>
     </q-table>
@@ -254,10 +254,8 @@ const getProduct = computed(() => {
 function openEditForm(e) {
   const id = e.currentTarget.id.split(' ')
   const productId = id[0]
-
   const findProduct = rows.value.find(row => parseInt(row.COSMETIC_ID) === parseInt(productId))
   currentProductEdit.value = findProduct
-  console.log(findProduct);
   const providerFound = providers.value.find(provider => provider.label === findProduct.PROVIDER_NAME)
   currentProviderEditSelected.value = providerFound
   priceEdit.value = findProduct.PRICE
@@ -292,22 +290,26 @@ function addNewProduct() {
 
 function editProduct() {
   // delete and asign new array
-  // save new => current Product === null
+  let findProduct = null
+  let foundIndex = null
+  rows.value.forEach((row, index) => {
+    if (parseInt(row.COSMETIC_ID) === parseInt(currentProductEdit.value.COSMETIC_ID)) {
+      findProduct = row
+      foundIndex = index
+    }
+  })
   const newProduct = {
-    "COSMETIC_ID": currentProduct.value.value,
-    "COSMETIC_NAME": currentProduct.value.label,
-    "QUANTITY": quantityCreate.value,
-    "PRICE": priceCreate.value,
+    "COSMETIC_ID": currentProductEdit.value.COSMETIC_ID,
+    "COSMETIC_NAME": currentProductEdit.value.COSMETIC_NAME,
+    "QUANTITY": quantityEdit.value,
+    "PRICE": priceEdit.value,
     "IMAGE": {
       IMAGE_ID: null,
-      IMAGE_URL: currentProduct.value.imgUrl
+      IMAGE_URL: currentProductEdit.value.IMAGE.IMAGE_URL
     },
-    "PROVIDER_NAME": currentProviderSelected.value.label
+    "PROVIDER_NAME": currentProviderEditSelected.value.label
   }
-  const findProduct = rows.value.find(row => parseInt(row.COSMETIC_ID) === parseInt(newProduct.COSMETIC_ID))
-  if (!findProduct) {
-    rows.value = [...rows.value, newProduct]
-  }
+  rows.value[foundIndex] = newProduct
   // add to rows.value
 }
 

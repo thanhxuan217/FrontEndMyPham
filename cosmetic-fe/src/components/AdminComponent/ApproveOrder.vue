@@ -225,7 +225,7 @@
                         <q-badge color="secondary" class="q-mb-md">
                             Lọc theo trạng thái:
                         </q-badge>
-                        <q-select filled v-model="filterStatus" multiple :options="statuses">
+                        <q-select filled v-model="filterStatus" :options="statusesOption">
                             <template v-slot:prepend>
                                 <q-icon name="filter_alt" />
                             </template>
@@ -338,7 +338,10 @@ const columns = [
     { name: '', label: '' },
 ]
 
-const filterStatus = ref([])
+const filterStatus = ref({
+    label: "Tất cả",
+    value: 0
+})
 const rows = ref([])
 const loading = ref(true)
 const filter = ref('')
@@ -377,17 +380,50 @@ const statuses = [
         value: 7
     }
 ]
+
+const statusesOption = [
+    {
+        label: "Tất cả",
+        value: 0
+    },
+    {
+        label: "Chưa duyệt",
+        value: 1
+    },
+    {
+        label: "Đã duyệt",
+        value: 2
+    },
+    {
+        label: "Đã thanh toán",
+        value: 3
+    },
+    {
+        label: "Đang chuẩn bị hàng",
+        value: 4
+    },
+    {
+        label: "Đang giao",
+        value: 5
+    },
+    {
+        label: "Đã hoàn thành",
+        value: 6
+    },
+    {
+        label: "Đã huỷ",
+        value: 7
+    }
+]
 function test(e) {
     console.log(e.target.value)
 }
 
 const getAllOrder = computed(() => {
-    if (filterStatus.value.length) {
-        const filter = filterStatus.value.map(status => parseInt(status.value))
-        return rows.value.filter(row => filter.includes(parseInt(row.STATUS.value)))
-    } else {
+    if (filterStatus.value.value === 0) {
         return rows.value
     }
+    return rows.value.filter(row => parseInt(filterStatus.value.value) === parseInt(row.STATUS.value))
 })
 function getStatus(value) {
     const result = statuses.find(status => parseInt(status.value) === parseInt(value))
