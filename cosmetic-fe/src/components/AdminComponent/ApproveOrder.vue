@@ -539,10 +539,7 @@ const fetchAPI = () => {
         if (parseInt(tab.value) === 0) {
             rows.value = allRows
         } else {
-            console.log(tab.value)
-            console.log(allRows)
             const result = allRows.filter(row => parseInt(tab.value) === parseInt(row.STATUS.value))
-            console.log(result)
             rows.value = result
         }
         loading.value = false

@@ -60,143 +60,122 @@
     </q-dialog>
     <div class="q-pa-md">
         <div class="q-gutter-y-md" style="width: 100%;">
-            <q-tabs bv-model="tab" shrink="false" narrow-indicator dense class="text-grey" active-color="primary"
+            <q-tabs v-model="tab" shrink="false" narrow-indicator dense class="text-grey" active-color="primary"
                 indicator-color="primary" align="justify">
-                <q-tab name="tatca" label="Tất cả" />
-                <q-tab name="chuaduyet" label="Chưa duyệt" />
-                <q-tab name="daduyet" label="Đã duyệt" />
-                <q-tab name="dathanhtoan" label="Đã thanh toán" />
-                <q-tab name="dangchuanbihang" label="Đang chuẩn bị hàng" />
-                <q-tab name="danggiao" label="Đang giao" />
-                <q-tab name="dahoanthanh" label="Đã hoàn thành" />
-                <q-tab name="dahuy" label="Đã huỷ" />
+                <q-tab name="0" label="Tất cả" />
+                <q-tab name="1" label="Chưa duyệt" />
+                <q-tab name="2" label="Đã duyệt" />
+                <q-tab name="3" label="Đã thanh toán" />
+                <q-tab name="4" label="Đang chuẩn bị hàng" />
+                <q-tab name="5" label="Đang giao" />
+                <q-tab name="6" label="Đã hoàn thành" />
+                <q-tab name="7" label="Đã huỷ" />
             </q-tabs>
-
             <q-separator />
-
-            <q-tab-panels v-model="tab" animated>
-                <q-tab-panel name="tatca">
-                    <div class="text-h6">Mails</div>
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                </q-tab-panel>
-
-                <q-tab-panel name="chuaduyet">
-                    <div class="text-h6">Alarms</div>
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                </q-tab-panel>
-
-                <q-tab-panel name="daduyet">
-                    <div class="text-h6">Movies</div>
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                </q-tab-panel>
-            </q-tab-panels>
-        </div>
-    </div>
-    <!-- <div class='change-userinfo-form-right-container order-history'>
-        <div class='title'>
-            Đơn hàng của bạn
-        </div>
-        <div class='content order-history-content'>
-            <div class='order-container' v-for="order in orders">
-                <div class='order-info'>
-                    <div class='group-2'>
-                        <div class='order-title'>
-                            Thời gian đặt
-                        </div>
-                        <div class='order-content'>
-                            {{ order.ORDER_TIME }}
-                        </div>
-                    </div>
-                    <div class='group-2'>
-                        <div class='order-title'>
-                            Địa chỉ giao
-                        </div>
-                        <div class='order-content'>
-                            {{ getAddress(order.ADDRESS) }}
-                        </div>
-                    </div>
-                    <div class='group-2'>
-                        <div class='order-title'>
-                            Phương thức thanh toán
-                        </div>
-                        <div class='order-content'>
-                            {{ order.METHOD === 'paypal' ? 'Paypal' : 'Tiền mặt' }}
-                        </div>
-                    </div>
-                    <div class='group-2'>
-                        <div class='order-title'>
-                            Trạng thái
-                        </div>
-                        <div class='order-content status'>
-                            {{ getStatus(order.STATUS) }}
-                        </div>
-                    </div>
-                </div>
-
-                <div class='order-detail' v-for="orderDetail in order.order_details">
-                    <div class='product-info'>
-                        <div class='product-img'>
-                            <img :src="orderDetail.COSMETIC.IMAGE.IMAGE_URL" />
-                            <div class='product-name'>
-                                <label>{{ orderDetail.COSMETIC.COSMETIC_NAME }}</label>
-                                <label><b>x{{ orderDetail.QUANTITY }}</b></label>
+            <div class='change-userinfo-form-right-container order-history'>
+                <div class='content order-history-content'>
+                    <div class='order-container' v-for="order in getAllOrder">
+                        <div class='order-info'>
+                            <div class='group-2'>
+                                <div class='order-title'>
+                                    Thời gian đặt
+                                </div>
+                                <div class='order-content'>
+                                    {{ order.ORDER_TIME }}
+                                </div>
+                            </div>
+                            <div class='group-2'>
+                                <div class='order-title'>
+                                    Địa chỉ giao
+                                </div>
+                                <div class='order-content'>
+                                    {{ getAddress(order.ADDRESS) }}
+                                </div>
+                            </div>
+                            <div class='group-2'>
+                                <div class='order-title'>
+                                    Phương thức thanh toán
+                                </div>
+                                <div class='order-content'>
+                                    {{ order.METHOD === 'paypal' ? 'Paypal' : 'Tiền mặt' }}
+                                </div>
+                            </div>
+                            <div class='group-2'>
+                                <div class='order-title'>
+                                    Trạng thái
+                                </div>
+                                <div class='order-content status'>
+                                    {{ getStatus(order.STATUS) }}
+                                </div>
                             </div>
                         </div>
-                        <div class='detail'>
+
+                        <div class='order-detail' v-for="orderDetail in order.order_details">
+                            <div class='product-info'>
+                                <div class='product-img'>
+                                    <img :src="orderDetail.COSMETIC.IMAGE.IMAGE_URL" />
+                                    <div class='product-name'>
+                                        <label>{{ orderDetail.COSMETIC.COSMETIC_NAME }}</label>
+                                        <label><b>x{{ orderDetail.QUANTITY }}</b></label>
+                                    </div>
+                                </div>
+                                <div class='detail'>
+                                </div>
+                                <div class='price'>
+                                    Giá: {{ VNDCurrencyFormatter.formatToVND(orderDetail.PRICE) }}
+                                </div>
+                            </div>
+                            <q-separator />
                         </div>
-                        <div class='price'>
-                            Giá: {{ VNDCurrencyFormatter.formatToVND(orderDetail.PRICE) }}
+                        <div class='price-info'>
+                            <div class='ship-price'>
+                                <label>
+                                    Phí ship:&nbsp;
+                                </label>
+                                <label>
+                                    {{ VNDCurrencyFormatter.formatToVND(order.SHIP_PRICE) }}
+                                </label>
+                            </div>
+                            <div class='sum-price'>
+                                <label>
+                                    Thành tiền:&nbsp;
+                                </label>
+                                <label class="thanhtien">
+                                    {{ VNDCurrencyFormatter.formatToVND(getSumPrice(order)) }}
+                                </label>
+                                <q-space></q-space>
+
+                                <q-btn color="red" v-if="parseInt(order.STATUS) === 6 && !order.reviews.length"
+                                    :id="order.ORDER_ID + ' review'" @click="openReviewForm">
+                                    Đánh giá
+                                    <template v-slot:loading>
+                                        Loading...
+                                    </template>
+                                </q-btn>
+
+                                <q-btn color="red" v-else-if="order.reviews.length" :id="order.ORDER_ID + ' detai-review'"
+                                    @click="detailPreview">
+                                    Xem đánh giá
+                                    <template v-slot:loading>
+                                        Loading...
+                                    </template>
+                                </q-btn>
+
+                                <q-btn color="red" v-else :disable="parseInt(order.STATUS) !== 1"
+                                    :id="order.ORDER_ID + ' order'" @click="updateStatus">
+                                    Huỷ đơn
+                                    <template v-slot:loading>
+                                        Loading...
+                                    </template>
+                                </q-btn>
+                            </div>
                         </div>
                     </div>
-                    <q-separator />
-                </div>
-                <div class='price-info'>
-                    <div class='ship-price'>
-                        <label>
-                            Phí ship:&nbsp;
-                        </label>
-                        <label>
-                            {{ VNDCurrencyFormatter.formatToVND(order.SHIP_PRICE) }}
-                        </label>
-                    </div>
-                    <div class='sum-price'>
-                        <label>
-                            Thành tiền:&nbsp;
-                        </label>
-                        <label class="thanhtien">
-                            {{ VNDCurrencyFormatter.formatToVND(getSumPrice(order)) }}
-                        </label>
-                        <q-space></q-space>
 
-                        <q-btn color="red" v-if="parseInt(order.STATUS) === 6 && !order.reviews.length"
-                            :id="order.ORDER_ID + ' review'" @click="openReviewForm">
-                            Đánh giá
-                            <template v-slot:loading>
-                                Loading...
-                            </template>
-                        </q-btn>
-
-                        <q-btn color="red" v-else-if="order.reviews.length" :id="order.ORDER_ID + ' detai-review'"
-                            @click="detailPreview">
-                            Xem đánh giá
-                            <template v-slot:loading>
-                                Loading...
-                            </template>
-                        </q-btn>
-
-                        <q-btn color="red" v-else :disable="parseInt(order.STATUS) !== 1" :id="order.ORDER_ID + ' order'"
-                            @click="updateStatus">
-                            Huỷ đơn
-                            <template v-slot:loading>
-                                Loading...
-                            </template>
-                        </q-btn>
-                    </div>
                 </div>
             </div>
-
         </div>
-    </div> -->
+    </div>
 </template>
 <script setup>
 import { reactive, watch, nextTick, computed, ref } from 'vue'
@@ -215,7 +194,7 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 dayjs.extend(relativeTime)
 const router = useRouter()
 const route = useRoute()
-const tab = ref('all')
+const tab = ref('0')
 const orders = ref([])
 const ratingForm = ref(false)
 const detailPreviewForm = ref(false)
@@ -225,7 +204,6 @@ const currentOrder = ref(null)
 onMounted(() => {
     AuthenticationAPI.getOrders()
         .then(res => {
-            console.log(res.data)
             orders.value = res.data
         })
 })
@@ -290,6 +268,13 @@ function updateStatus(e) {
             toast.success("Cập nhật thành công!", { theme: 'colored' })
         })
 }
+const getAllOrder = computed(() => {
+    if (tab.value === "0") {
+        return orders.value
+    } else {
+        return orders.value.filter(order => parseInt(order.STATUS) === parseInt(tab.value))
+    }
+})
 function openReviewForm(e) {
     ratingForm.value = true
     const orderFound = orders.value.find(order => parseInt(order.ORDER_ID) === parseInt(e.currentTarget.id.split(' ')[0]))
