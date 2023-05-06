@@ -103,7 +103,7 @@ function logout() {
 
                     </q-expansion-item>
 
-                    <q-separator spaced />
+                    <!-- <q-separator spaced />
                     <q-item clickable v-ripple :active="pathName === '/admin/receive'" @click="pathName = '/admin/receive'"
                         to='/admin/receive' active-class="my-menu-link">
                         <q-item-section avatar>
@@ -111,7 +111,7 @@ function logout() {
                         </q-item-section>
 
                         <q-item-section>Nhập hàng</q-item-section>
-                    </q-item>
+                    </q-item> -->
                     <!-- <q-item clickable v-ripple active-class="my-menu-link">
                         <q-item-section avatar>
                             <q-icon name="settings" />
