@@ -132,6 +132,10 @@ const getSumAll = computed(() => {
     }
     return VNDCurrencyFormatter.formatToVND(sum)
 })
+function getAddress(data) {
+    const result = data.ADDRESS_DETAIL + ',  ' + data.VILLAGE.VILLAGE_NAME + ',  ' + data.VILLAGE.DISTRICT.DISTRICT_NAME + ',  ' + data.VILLAGE.DISTRICT.PROVINCE.PROVINCE_NAME;
+    return result;
+}
 const getTotal = computed(() => {
     let sum = 0
     if (cartItems) {
@@ -190,7 +194,196 @@ function cashPayment() {
 }
 </script>
 <template>
-    <div class='container' v-if="!loading">
+    <div class="row" style="padding: 50px 50px;" v-if="!loading">
+        <div class="row payment" style="flex-basis: 80%;">
+            <div class='form-container'>
+                <div class='title'>
+                    <div>Phương thức vận chuyển</div>
+                    <div class="change" @click="isOpenShipMethodEdit = true">
+                        Thay đổi
+                    </div>
+                </div>
+                <div class='content my-custom-form'>
+                    <div class='services'>
+                        <div class='services-detail'>
+                            <div>
+                                Phương thức vận chuyển: &nbsp; {{ state.currentService.service.short_name }}
+                            </div>
+                            <div>
+                                Phí vận chuyển: &nbsp;
+                                <label>
+                                    {{ VNDCurrencyFormatter.formatToVND(state.currentService.feeShip.total) }}
+                                </label>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class='payment-product form-container my-custom-form'>
+                <div class='title my-custom-form'>
+                    Sản phẩm đã đặt
+                </div>
+                <div class='content'>
+                    <div class='product'>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <td>
+                                        Sản phẩm
+                                    </td>
+                                    <td class='price sub'>
+                                        Đơn giá
+                                    </td>
+                                    <td class='quantity sub'>
+                                        Số lượng
+                                    </td>
+                                    <td class='sum sub'>
+                                        Thành tiền
+                                    </td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="cartItem in cartItems">
+                                    <td class='product-img'>
+                                        <img alt='img' :src="cartItem.cosmetic.IMAGE.IMAGE_URL" />
+                                        <div>{{ cartItem.cosmetic.COSMETIC_NAME }}</div>
+                                    </td>
+                                    <td>
+                                        <div class="price" v-if="cartItem.discount">
+                                            <div class="price-after-sale">
+                                                {{ VNDCurrencyFormatter.formatToVND(cartItem.discount.priceAfterDiscount) }}
+                                            </div>
+                                            <div class='price-sale'>
+                                                <label class='real-price'>
+                                                    {{ VNDCurrencyFormatter.formatToVND(cartItem.cosmetic.PRICE) }}
+                                                </label>
+                                                &nbsp;|&nbsp;
+                                                <label class='percent-discount'>
+                                                    {{ getPercent(cartItem.discount.price,
+                                                        cartItem.discount.priceAfterDiscount) }}
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="price-not-sale" v-else>
+                                            {{ VNDCurrencyFormatter.formatToVND(cartItem.cosmetic.PRICE) }}
+                                        </div>
+
+                                    </td>
+                                    <td class='quantity'>
+                                        {{ cartItem.quantity }}
+                                    </td>
+                                    <td class='sum'>
+                                        <span v-if="cartItem.discount">
+                                            {{ getSumprice(cartItem.discount.priceAfterDiscount, cartItem.quantity) }}
+                                        </span>
+                                        <span v-else>
+                                            {{ getSumprice(cartItem.cosmetic.PRICE, cartItem.quantity) }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class='select-payment-option form-container my-custom-form'>
+                <div class='title my-custom-form'>
+                    Phương thức thanh toán:
+                </div>
+                <div class='content'>
+                    <div class='payment-option'>
+                        <div @click="state.currentPaymentMethod = 'cash'" class='payment-method' id='cash-method'
+                            :class="{ active: state.currentPaymentMethod === 'cash' }">
+                            <div class='method-title'>
+                                Tiền mặt
+                            </div>
+                            <div class="method-icon">
+                                <i class="bi bi-cash"></i>
+                            </div>
+                        </div>
+                        <div class='payment-method' @click="state.currentPaymentMethod = 'paypal'" id='paypal-method'
+                            :class="{ active: state.currentPaymentMethod === 'paypal' }">
+                            <div class='method-title'>
+                                Paypal
+                            </div>
+                            <div class="method-icon">
+                                <i class="bi bi-paypal"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row" style="flex-basis: 20%;">
+            <ChangeAddress v-if="isOpenAddressEdit" @changeAddress="changeCurrentAddress"
+                @closeChangeAddress="() => isOpenAddressEdit = false" :addresses="state.addresses"
+                :currentAddress="state.currentAddress" :key="state.currentAddress.ADDRESS_ID" />
+            <div class='payment-header form-container'>
+                <div class='title'>
+                    <div> Địa chỉ nhận hàng </div>
+                    <div class='change-address'>
+                        <div @click="isOpenAddressEdit = true" class="change">Thay đổi</div>
+                    </div>
+                </div>
+                <div class='content address-form'>
+                    <div class='address-select'>
+                        <div class='address-detail'>
+                            <div class='userName'>
+                                <b>
+                                    {{ state.currentAddress.CLIENT_NAME }}
+                                    &nbsp;|&nbsp;{{ state.currentAddress.PHONE }}
+                                </b>
+                            </div>
+                            <div class='address'>
+                                {{ getAddress(state.currentAddress) }}
+                            </div>
+                            <div class='default-address' v-if="state.currentAddress.IS_DEFAULT">
+                                Mặc định
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class='sum-price form-container my-custom-form'>
+                <div class='title'>
+                    Chi tiết thanh toán:
+                </div>
+                <div class='content'>
+                    <div>
+                        Tổng tiền hàng: &nbsp;
+                        {{ getSumAll }}
+                    </div>
+                    <div>Phí vận chuyển : &nbsp;
+                        {{ VNDCurrencyFormatter.formatToVND(state.currentService.feeShip.total) }}
+                    </div>
+                    <div>Tổng tiền: &nbsp;
+                        <span class="total">
+                            {{ VNDCurrencyFormatter.formatToVND(getTotal) }}
+                        </span>
+                    </div>
+                </div>
+                <div class='cash-payment-group' v-show="state.currentPaymentMethod === 'cash'">
+                    <div>
+                        <p>
+                            <b>Thanh toán khi nhận hàng: </b>
+                            <br />
+                            Phí thu hộ: 0 VNĐ
+                        </p>
+                    </div>
+                    <button class='save pay' @click="cashPayment">Đặt hàng</button>
+                </div>
+                <div class="payment-withpaypal" v-show="state.currentPaymentMethod !== 'cash'">
+                    <div>
+                        <b>Thanh toán trực tiếp bằng paypal:</b>
+                    </div>
+                    <div ref="paypalBtn"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- <div class='container' v-if="!loading">
         <ChangeAddress v-if="isOpenAddressEdit" @changeAddress="changeCurrentAddress"
             @closeChangeAddress="() => isOpenAddressEdit = false" :addresses="state.addresses"
             :currentAddress="state.currentAddress" :key="state.currentAddress.ADDRESS_ID" />
@@ -386,7 +579,7 @@ function cashPayment() {
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
     <div class='container' v-if="loading">
         <ChangeAddress v-if="isShowChangeAddressInLoading" :addresses="state.addresses"
             :currentAddress="state.currentAddress" :loading="loading" />
@@ -563,21 +756,34 @@ function cashPayment() {
     </div>
 </template>
 <style scoped>
+.form-container {
+    background-color: white;
+    border-radius: 5px;
+    border: none;
+    box-shadow: none;
+    padding-bottom: 25px;
+}
+
+.form-container .title {
+    padding: 20px 0px;
+    border-bottom: solid 1px rgb(237, 233, 233);
+    font-size: 17px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
 .change {
     cursor: pointer;
     color: blue;
 }
 
-.payment {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    gap: 20px;
-    border-radius: 3px;
-    border: solid 1px rgba(231, 224, 224, 0.902) !important;
-    box-shadow: 0 0 35px 0 rgba(203, 198, 198, 0.902)
+.address-form {
+    border: none !important;
+    border-radius: 0;
+    box-shadow: none !important;
 }
-
 .payment .payment-product .product .product-img img {
     width: 100px;
     height: 100px;
@@ -590,12 +796,10 @@ function cashPayment() {
 }
 
 .my-custom-form {
-    box-shadow: none !important;
-    border-top: none;
-    border-left: none;
-    border-right: none;
-    border-radius: 0px;
-    border-bottom: solid 1px rgba(223, 215, 215, 0.884) !important;
+    border: solid 1px #c1cd9a !important;
+    box-shadow: 0 0 35px 0 rgba(203, 198, 198, 0.902);
+    border-radius: 5px;
+    flex-grow: 2;
 }
 
 .payment .payment-product .content .product table {
@@ -706,9 +910,7 @@ function cashPayment() {
     font-size: 16px;
     border-bottom: solid 1px rgb(214, 211, 211);
     padding-bottom: 15px;
-    padding-left: 15px;
-    padding-right: 15px;
-    font-weight: 500;
+    font-weight: 600;
     text-transform: uppercase;
     display: flex;
     flex-direction: row;
