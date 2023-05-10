@@ -1,13 +1,17 @@
 <script>
-import AuthenticationAPI from '../api/LoginAPI/authenticationAPI';
+import AuthenticationAPI from '../api/LoginAPI/authenticationAPI'
+import { toast } from 'vue3-toastify'
+import 'vue3-toastify/dist/index.css'
 import { useUserStore } from '@/store/userStore'
 import { mapState, mapActions } from 'pinia'
 import { useCartStore } from '../store/cartStore'
+
 export default {
     data() {
         return {
             userName: '',
-            password: ''
+            password: '',
+            err: ''
         }
     },
     methods: {
@@ -32,7 +36,9 @@ export default {
                     this.$router.push('/')
                 })
                 .catch(err => {
-                    console.log(err)
+                    toast.error("Đăng nhập thất bại!", { theme: 'colored' })
+                    this.err = err.response.data
+                    console.log()
                 })
         }
     },
@@ -57,8 +63,12 @@ export default {
         <div class='login-container'>
             <div class='title-login'>
                 Đăng nhập vào tài khoản của bạn
+
             </div>
             <form class='content-login'>
+                <div style="color: red;">
+                    {{ err }}
+                </div>
                 <div class='form-group'>
                     <label>Tên tài khoản hoặc email</label>
                     <input type='text' class='input-login' placeholder='Tài khoản/Email' id='userName'
