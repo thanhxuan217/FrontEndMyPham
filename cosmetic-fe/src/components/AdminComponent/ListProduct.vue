@@ -857,7 +857,7 @@ function filterProduct(rows) {
 </script>
 <style>
 .admin-table thead{
-  background-color: #1976D2;
+  background-color: #bdbdbd!important;
 }
 .admin-detail-product .scroll {
   overflow: hidden;

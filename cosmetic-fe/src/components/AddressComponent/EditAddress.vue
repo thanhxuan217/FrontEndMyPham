@@ -194,7 +194,7 @@ onMounted(() => {
 }
 
 .row-select {
-    gap: 35px
+    gap: 19px
 }
 
 .form {

@@ -4,7 +4,7 @@ class OrderAPI {
         return await axiosPath.default().get('/api/admin/order/getAll')
     }
     static async updateStatus(data) {
-        return await axiosPath.default().put('/api/admin/order/updateStatus', data)
+        return await axiosPath.authentication().put('/api/admin/order/updateStatus', data)
     }
     static async approve(data) {
         return await axiosPath.authentication().put('/api/admin/order/approve', data)

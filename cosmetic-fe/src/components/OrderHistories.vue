@@ -60,9 +60,9 @@
     </q-dialog>
     <div class="q-pa-md">
         <div class="q-gutter-y-md" style="width: 100%;">
-            <q-tabs v-model="tab" shrink="false" narrow-indicator dense class="text-grey" active-color="primary"
+            <q-tabs style="background-color: #b1cfe0;" v-model="tab" shrink="false" narrow-indicator dense active-color="primary"
                 indicator-color="primary" align="justify">
-                <q-tab name="0" label="Tất cả" />
+                <q-tab backgroundColor="rgb(69, 222, 8)" name="0" label="Tất cả" />
                 <q-tab name="1" label="Chưa duyệt" />
                 <q-tab name="2" label="Đã duyệt" />
                 <q-tab name="3" label="Đã thanh toán" />
@@ -73,8 +73,8 @@
             </q-tabs>
             <q-separator />
             <div class='change-userinfo-form-right-container order-history'>
-                <div class='content order-history-content'>
-                    <div class='order-container' v-for="order in getAllOrder">
+                <div class='content order-history-content' v-for="order in getAllOrder">
+                    <div class='order-container' >
                         <div class='order-info'>
                             <div class='group-2'>
                                 <div class='order-title'>
@@ -444,5 +444,9 @@ function handleRating() {
 .order-history-content .order-container .price-info .sum-price .thanhtien {
     font-size: 24px;
     color: red;
+}
+.q-tab--active {
+    background-color: #909b6b;
+    color: white !important;
 }
 </style>

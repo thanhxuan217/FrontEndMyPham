@@ -98,8 +98,7 @@
                                                 <template v-slot:control>
                                                     <div class="self-center full-width no-outline" tabindex="0"
                                                         style="color: ;">
-                                                        {{ currentOrderSelected.EMPLOYEE ?
-                                                            currentOrderSelected.EMPLOYEE.EMPLOYEE_NAME : "Chưa có" }}
+                                                        {{ currentOrderSelected.APPROVED_BY || "Chưa có" }}
                                                     </div>
                                                 </template>
                                             </q-field>
@@ -203,8 +202,8 @@
                                         {{ VNDCurrencyFormatter.formatToVND(orderDetail.PRICE) }}
                                     </span>
                                     <span style="color: red;">
-                                        {{ " (-" + ((orderDetail.COSMETIC.PRICE - orderDetail.PRICE) /
-                                            orderDetail.COSMETIC.PRICE) * 100 + "%)" }}
+                                        {{ " (-" + Math.round(((orderDetail.COSMETIC.PRICE - orderDetail.PRICE) /
+                                            orderDetail.COSMETIC.PRICE) * 100) + "%)" }}
                                     </span>
                                 </q-item-label>
                             </q-item-section>
@@ -227,7 +226,7 @@
         </q-tabs>
         <q-separator />
         <!-- row-key (tr) lay trong row => la ten cua row nha -->
-        <q-table :key="Math.floor(Math.random() * 10) + 1" selection="multiple" v-model:selected="selected"
+        <q-table  :key="Math.floor(Math.random() * 10) + 1" selection="multiple" v-model:selected="selected"
             class="admin-table" title="Danh sách đơn hàng" :rows="rows" :columns="columns" row-key="ORDER_ID"
             :loading="loading" :filter="filter" :filter-method="filterProduct"
             no-data-label="I didn't find anything for you" no-results-label="The filter didn't uncover any results"
@@ -313,7 +312,7 @@
                             :option-disable="opt => Object(opt) === opt ? parseInt(opt.value) <= parseInt(props.row.STATUS.value) : true" /> -->
                     </q-td>
                     <q-td key="admin" :props="props">
-                        {{ props.row.EMPLOYEE ? props.row.EMPLOYEE.EMPLOYEE_NAME : null }}
+                        {{ props.row.APPROVED_BY || "Chưa có" }}
                     </q-td>
                     <q-td>
                         <q-icon @click="openDetail" :id="props.row.ORDER_ID + ' detail'" name="preview"
@@ -532,7 +531,7 @@ const fetchAPI = () => {
                 "METHOD": order.METHOD,
                 "SUM": parseFloat(sum) + parseFloat(order.SHIP_PRICE),
                 "STATUS": status,
-                "EMPLOYEE": order.EMPLOYEE,
+                "APPROVED_BY": order.APPROVED_BY,
             }
             return result
         })
@@ -654,6 +653,10 @@ function handleChangeSelect(e) {
 .my-select option {
     font-size: 13px;
     border: none;
+}
+.q-tab--active {
+    background-color: #909b6b;
+    color: white !important;
 }
 </style>
     

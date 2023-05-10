@@ -212,10 +212,10 @@ const isEmptyCart = computed(() => {
                     <tr>
                         <td colspan="8">
                             <div class="foot">
-                                <div class="go-back" onClick={goBack}>
+                                <RouterLink to='/products?price=0&price=2000000' class="go-back">
                                     <i class="bi bi-arrow-left"></i>
                                     Tiếp tục mua hàng
-                                </div>
+                                </RouterLink>
                             </div>
                         </td>
                     </tr>
@@ -307,10 +307,10 @@ const isEmptyCart = computed(() => {
                     <tr>
                         <td colspan="8">
                             <div class="foot">
-                                <div class="go-back">
+                                <RouterLink to='/products' class="go-back">
                                     <i class="bi bi-arrow-left"></i>
                                     Tiếp tục mua hàng
-                                </div>
+                                </RouterLink>
                             </div>
                         </td>
                     </tr>
@@ -574,6 +574,8 @@ const isEmptyCart = computed(() => {
     gap: 15px;
     cursor: pointer;
     width: fit-content;
+    text-decoration: none;
+    color: black;
 }
 
 .thanhtien {
